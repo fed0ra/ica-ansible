@@ -1,0 +1,5 @@
+- name: 部署mysql
+  gather_facts: false
+  hosts: mysql
+  roles:
+    - mysql

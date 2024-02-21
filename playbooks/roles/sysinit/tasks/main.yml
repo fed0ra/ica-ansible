@@ -1,0 +1,29 @@
+---
+# 所有节点上运行
+
+- name: 关闭系统防火墙
+  service: name=firewalld state=stopped enabled=no
+
+- name: 关闭Selinux
+  lineinfile:
+    dest: /etc/selinux/config
+    regexp: "^SELINUX"
+    line: "SELINUX=disabled"
+  
+- name: 关闭swap分区
+  lineinfile:
+    dest: /etc/fstab
+    regexp: ".*swap"
+    line: ""
+
+- name: 配置生效
+  shell: setenforce 0 ; swapoff -a
+
+- name: 配置时区
+  copy: src=/usr/share/zoneinfo/Asia/Shanghai dest=/etc/localtime
+
+- name: 配置hosts解析
+  template: src=hosts.j2 dest=/etc/hosts
+
+- name: 创建临时目录
+  file: dest={{ tmp_dir }} state=directory

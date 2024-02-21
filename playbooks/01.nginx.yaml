@@ -1,0 +1,5 @@
+- name: 部署nginx
+  gather_facts: false
+  hosts: nginx
+  roles:
+    - nginx

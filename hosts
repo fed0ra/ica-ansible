@@ -1,0 +1,15 @@
+# Nginx节点IP
+[nginx]
+192.168.133.151
+192.168.133.152
+
+# Nginx高可用Keepalived节点IP
+[keepalived]
+192.168.133.151 ha_name=ha-master 
+192.168.133.152 ha_name=ha-backup
+
+# MySQL主从节点IP
+[mysql]
+192.168.133.151 master=true #package=true
+192.168.133.152 slave=true #package=true
+

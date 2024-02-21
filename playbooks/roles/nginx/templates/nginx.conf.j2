@@ -1,0 +1,80 @@
+user {{ nginx_install_user }};
+worker_processes  auto;
+error_log  logs/error.log  error;
+pid        logs/nginx.pid;
+#worker_rlimit_nofile 65535;
+#worker_cpu_affinity 00000001 00000010 00000100 00001000 00010000 00100000 01000000 10000000;
+
+events {
+        worker_connections  65535;
+        use epoll;
+}
+
+# 四层反向代理
+#include extra/l4-proxy.conf;
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+    log_format  info  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$request_body $status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+    access_log  logs/access.log  main;
+
+    sendfile            on;
+    tcp_nopush          on;
+    underscores_in_headers on;
+    keepalive_timeout   600;
+    keepalive_requests 10000;
+    send_timeout 300;
+    server_tokens               off;
+    tcp_nodelay on;
+    #gzip压缩传输
+    #gzip on;
+    #gzip_min_length 1k;
+    #gzip_buffers 4 32k;
+    #gzip_http_version 1.1;
+    #gzip_comp_level 9;
+    #gzip_types text/css text/xml application/javascript image/jpeg image/png application/x-shockwave-flash application/json;
+    #gzip_vary on;	
+    #server_names_hash_bucket_size 128;
+    #server_names_hash_max_size 512;
+    #client_header_timeout 300;
+    #client_body_timeout 300;
+    #client_max_body_size 1024m;
+    #client_body_buffer_size 10m;	
+    #client_header_buffer_size 128k;
+    #large_client_header_buffers 4 64k;
+
+    #fastcgi_connect_timeout 60;
+    #fastcgi_send_timeout 60;
+    #fastcgi_read_timeout 60;
+    #fastcgi_buffer_size 64k;
+    #fastcgi_buffers 4 64k;
+    #fastcgi_busy_buffers_size 128k;
+    #fastcgi_temp_file_write_size 128k;
+    ##fastcgi_cache     mean_nginx;
+    #fastcgi_cache_valid 200 302 1h;
+    #fastcgi_cache_valid 301     1d;
+    #fastcgi_cache_valid any      1m;
+    #fastcgi_cache_min_uses 1;
+
+    server {
+        listen  8003;
+        server_name 127.0.0.1;
+        location /ngx_status
+        {
+            stub_status on;
+            access_log off;
+            allow 127.0.0.1;
+            deny all;
+        }
+    }
+
+    # 七层反向代理
+    #include extra/l7-grpc-proxy.conf;
+    #include extra/l7-proxy.conf;
+}

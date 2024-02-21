@@ -1,0 +1,167 @@
+---
+- name: debug package variable
+  debug:
+    var: package
+
+- name: "1、创建临时目录"
+  file: dest={{ tmp_dir }} state=directory
+
+- name: "2、拷贝mysql二进制包"
+  copy: src={{ software_dir }}/mysql-{{ mysql_version }}-linux-glibc2.12-x86_64.tar.xz dest={{ tmp_dir }}
+  when: package is defined
+
+- name: "2、下载mysql二进制包"
+  get_url:
+    url: "https://cdn.mysql.com/archives/mysql-8.0/mysql-{{ mysql_version }}-linux-glibc2.12-x86_64.tar.xz"
+    validate_certs: false
+    dest: "{{ tmp_dir }}"
+    mode: "0644"
+    force: true
+  when: package is not defined
+
+- name: "3、解压mysql二进制包"
+  unarchive: src={{ tmp_dir }}/mysql-{{ mysql_version }}-linux-glibc2.12-x86_64.tar.xz dest={{ tmp_dir }}
+
+- name: "4、移动mysql二进制包"
+  command: mv {{ tmp_dir }}/mysql-{{ mysql_version }}-linux-glibc2.12-x86_64 {{ mysql_work_dir }}-{{ mysql_version }}
+
+- name: "5、创建{{ mysql_install_user }}用户"
+  user:
+    name: "{{ mysql_install_user }}"
+    shell: /sbin/nologin
+
+- name: "6、创建数据目录"
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ mysql_install_user }}"
+    group: "{{ mysql_install_user }}"
+    recurse: yes
+  with_items:
+    - "{{ mysql_work_dir }}-{{ mysql_version }}/data"
+
+- name: "7、生成mysql配置文件"
+  template:
+    src: "my.cnf.j2"
+    dest: "{{ mysql_work_dir }}-{{ mysql_version }}/my.cnf"
+
+- name: "8、修改权限"
+  command: chown -R "{{ mysql_install_user }}:{{ mysql_install_user }}" "{{ mysql_work_dir }}-{{ mysql_version }}"
+
+- name: "9、创建链接文件"
+  file:
+    src: "{{ mysql_work_dir }}-{{ mysql_version }}"
+    dest: "{{ mysql_work_dir }}"
+    owner: "{{ mysql_install_user }}"
+    group: "{{ mysql_install_user }}"
+    state: link
+
+- name: "10、Gather facts获取系统信息"
+  ansible.builtin.setup:
+
+- name: "11、安装依赖 4 Debian"
+  #package:
+  apt:
+    name:
+      - libnuma1
+      - libtinfo5
+      - pkg-config
+  when: ansible_os_family == "Debian"
+
+- name: "11、安装依赖 4 RedHat"
+  yum:
+    name:
+      - numactl-libs
+      - ncurses-compat-libs
+      - pkgconfig
+  when: ansible_os_family == "RedHat"
+
+- name: "12、安装PyMySQL"
+  shell: pip install PyMySQL
+
+- name: "13、数据库初始化"
+  shell: ./bin/mysqld --defaults-file={{ mysql_work_dir }}/my.cnf --initialize --user={{ mysql_install_user }} # 2>&1 | tee password.txt 
+  args:
+    chdir: "{{ mysql_work_dir }}"
+
+- name: "14、注册初始密码"
+  #shell: cat {{ mysql_work_dir }}/password.txt | awk '/A temporary password/{print $NF}'
+  shell: cat {{ mysql_work_dir }}/data/error.log | awk '/A temporary password/{print $NF}'
+  register: mysql_init_passwd
+  args:  
+    chdir: "{{ mysql_work_dir }}"
+
+- name: "15、打印初始密码"
+  debug: 
+    msg: "{{ mysql_init_passwd.stdout }}"
+
+- name: "16、配置systemd守护进程"
+  template: src=mysqld.service.j2 dest=/usr/lib/systemd/system/mysqld.service
+
+- name: "17、启动mysqld服务"
+  systemd:
+    name: mysqld
+    state: started
+    daemon_reload: yes
+    enabled: yes
+
+- name: "18、修改初始密码"
+  shell: ./bin/mysqladmin -S {{ mysql_work_dir }}/mysql.sock -u root -p"{{ mysql_init_passwd.stdout }}" password "{{ mysql_root_passwd }}"
+  args:
+    chdir: "{{ mysql_work_dir }}"
+
+- name: "19、创建{{ repl_user }}同步用户"
+  mysql_user: 
+    login_host: localhost
+    login_user: root
+    login_port: "{{ mysql_port }}"
+    login_unix_socket: "{{ mysql_work_dir }}/mysql.sock" 
+    login_password: "{{ mysql_root_passwd }}"
+    name: "{{ repl_user }}"
+    password: "{{ repl_passwd }}"
+    priv: "*.*:replication slave"   # priv: "*.*:ALL"
+    state: present 
+    host: "%"
+  when: master is defined
+
+- name: "20、从库配置从主库同步"
+  mysql_replication:
+    login_host: localhost
+    login_user: root     
+    login_port: "{{ mysql_port }}"
+    login_unix_socket: "{{ mysql_work_dir }}/mysql.sock" 
+    login_password: "{{ mysql_root_passwd }}"
+    master_host: "{{ master_ip }}" 
+    master_user: "{{ repl_user }}" 
+    master_password: "{{ repl_passwd }}"
+    master_port: "{{ mysql_port }}"
+    master_auto_position: 1
+    mode: changemaster
+  when: slave is defined
+
+- name: "21、Start Slave"
+  mysql_replication: 
+    login_host: localhost
+    login_user: root 
+    login_port: "{{ mysql_port }}"
+    login_unix_socket: "{{ mysql_work_dir }}/mysql.sock" 
+    login_password: "{{ mysql_root_passwd }}"
+    mode: startslave
+  when: slave is defined
+
+#- name: "22、注册复制状态"
+#  mysql_replication:
+#    login_host: localhost
+#    login_user: root
+#    login_port: "{{ mysql_port }}"
+#    login_unix_socket: "{{ mysql_work_dir }}/mysql.sock" 
+#    login_password: "{{ mysql_root_passwd }}"
+#    mode: getslave
+#  when: slave is defined
+#  register: info
+
+#- name: "23、打印复制状态信息"
+#  debug:
+#    msg: "Slave_IO_Running={{ info.Slave_IO_Running }}       Slave_SQL_Running={{ info.Slave_SQL_Running }}"
+#  when: slave is defined
+

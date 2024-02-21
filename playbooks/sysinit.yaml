@@ -1,0 +1,6 @@
+# system initialization tasks for all nodes
+- name: 系统初始化
+  gather_facts: false
+  hosts: all 
+  roles:
+    - sysinit

@@ -1,0 +1,32 @@
+[Unit]
+Description=MySQL Server
+After=network.target
+After=syslog.target
+ 
+[Service]
+User={{ mysql_install_user }}
+Group={{ mysql_install_user }}
+ 
+Type=notify
+ 
+TimeoutSec=0
+ 
+PermissionsStartOnly=true
+ 
+# 修改这里的 ExecStart 为指定的 my.cnf 文件路径
+ExecStart={{ mysql_work_dir }}/bin/mysqld --defaults-file={{ mysql_work_dir }}/my.cnf $MYSQLD_OPTS
+ 
+EnvironmentFile=-/etc/sysconfig/mysql
+ 
+LimitNOFILE = 10000
+ 
+Restart=on-failure
+ 
+RestartPreventExitStatus=1
+ 
+Environment=MYSQLD_PARENT_PID=1
+ 
+PrivateTmp=false
+ 
+[Install]
+WantedBy=multi-user.target

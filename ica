@@ -1,0 +1,54 @@
+#!/bin/bash
+# Create & manage k8s clusters
+
+function usage(){
+  echo -e "\033[33mUsage:\033[0m ./ica <step>"
+  cat <<EOF
+
+available steps:
+    01  nginx              to install nginx external loadbalance
+    02  keepalived         to install keepalived high availability for nginx(1 master and 1 backup)
+    03  mysql              to install mysql(1 master and n slave)
+    80  all                to run 01~03 all at once 
+
+examples: ./ica 01  (or ./ica nginx)
+          ./ica 03  (or ./ica mysql)
+          ./ica all (or ./ica 80)
+
+EOF
+}
+
+
+function setup() {
+
+    case "$1" in
+      (01|nginx)
+          PLAY_BOOK="01.nginx.yaml"
+          ;;
+      (02|keepalived)
+          PLAY_BOOK="02.keepalived.yaml"
+          ;;
+      (03|mysql)
+          PLAY_BOOK="03.mysql.yaml"
+          ;;
+      (80|all)
+          PLAY_BOOK="80.all.yml"
+          ;;
+      (*)
+    	      usage
+          exit 1 
+          ;;
+    esac
+
+    COMMAND="ansible-playbook -i hosts playbooks/$PLAY_BOOK"
+    echo "$COMMAND"
+    ${COMMAND} || return 1
+}
+
+function main() {
+
+[ "$#" -eq 1 ] || { usage >&2; exit 2; }
+setup $1
+
+}
+main "$@"

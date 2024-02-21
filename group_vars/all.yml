@@ -1,0 +1,26 @@
+
+nic: 'ens32'            # 修改为实际内网网卡名，如eth0
+
+# 安装目录 
+software_dir: '/root/ica-ansible/package'       # 离线安装包路径，根据实际情况需修改
+tmp_dir: '/opt/src/tmp/ica-ansible'      # 安装所需安装包临时目录
+
+nginx_work_dir: '/usr/local/nginx' # nginx安装目录
+nginx_install_user: 'nginx'
+nginx_version: '1.22.1'
+
+keepalived_work_dir: '/usr/local/keepalived' # keepalived安装目录
+keepalived_version: '2.2.7'
+vip: '192.168.133.250'  # 高可用keepalived的虚拟IP
+
+mysql_work_dir: '/usr/local/mysql'  # mysql安装目录
+mysql_install_user: 'mysql'
+mysql_version: '8.0.28'
+mysql_port: '3306'
+mysql_root_passwd: 'Admin@2024'
+repl_user: 'repl'
+repl_passwd: 'Repl@2024'
+master_ip: '192.168.133.151'  # mysql master的IP
+
+
+

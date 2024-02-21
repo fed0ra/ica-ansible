@@ -1,0 +1,17 @@
+[Unit]
+Description=Keepalive Daemon (LVS and VRRP)
+After=syslog.target network-online.target
+Wants=network-online.target
+# Only start if there is a configuration file
+ConditionFileNotEmpty=/etc/keepalived/keepalived.conf
+ 
+[Service]
+Type=forking
+KillMode=process
+# Read configuration variable file if it is present
+EnvironmentFile=/etc/sysconfig/keepalived
+ExecStart={{ keepalived_work_dir }}/sbin/keepalived $KEEPALIVED_OPTIONS
+ExecReload=/bin/kill -HUP $MAINPID
+ 
+[Install]
+WantedBy=multi-user.target

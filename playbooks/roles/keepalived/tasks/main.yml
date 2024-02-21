@@ -1,0 +1,34 @@
+---
+- name: "1、创建临时目录"
+  file: dest={{ tmp_dir }} state=directory
+
+- name: "2、拷贝keepalived安装包"
+  copy: src={{ software_dir }}/keepalived-2.2.7.tar.gz dest={{ tmp_dir }}
+
+- name: "3、解压keepalived源码"
+  unarchive: src={{ tmp_dir }}/keepalived-2.2.7.tar.gz dest={{ tmp_dir }}
+
+- name: "4、安装openssl等插件"
+  package:
+    name: "{{ item }}"
+  with_items:
+    - openssl
+    - libssl-dev
+
+- name: "5、编译安装keepalived"
+  shell: cd {{ tmp_dir }}/keepalived-{{ keepalived_version }} && ./configure --prefix={{ keepalived_work_dir }} --sysconf=/etc && make  && make install
+  changed_when: false
+
+- name: "6、拷贝keepalived配置文件"
+  template: src=keepalived.conf.j2 dest=/etc/keepalived/keepalived.conf
+
+- name: "7、拷贝keepalived.service文件"
+  template: src=keepalived.service.j2 dest=/usr/lib/systemd/system/keepalived.service
+
+- name: "8、拷贝nginx健康检查脚本"
+  copy: src=check_nginx.sh dest=/etc/keepalived/ mode=u+x
+
+- name: "9、启动keepalived服务"
+  systemd: name={{ item }} state=restarted enabled=yes daemon_reload=yes
+  with_items:
+    - keepalived

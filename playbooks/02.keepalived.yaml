@@ -1,0 +1,6 @@
+# install keepalived
+- name: 部署keepalived
+  gather_facts: false
+  hosts: keepalived
+  roles:
+    - keepalived

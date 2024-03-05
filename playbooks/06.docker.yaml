@@ -1,0 +1,5 @@
+- name: 部署docker
+  gather_facts: true  #false
+  hosts: docker
+  roles:
+    - docker

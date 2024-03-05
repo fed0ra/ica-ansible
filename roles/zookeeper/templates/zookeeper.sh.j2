@@ -1,0 +1,45 @@
+#!/bin/bash
+# zookeeper集群启动关闭脚本
+
+# 定义zookeeper集群节点列表
+NODES=({% for host in groups['zookeeper'] %}"{{ host }}" {% endfor %})
+
+# 定义zookeeper安装路径
+ZOOKEEPER_HOME={{ zookeeper_install_path }}/{{ zookeeper_link }}
+ 
+# 定义zookeeper配置文件路径
+ZOOKEEPER_CONF=$ZOOKEEPER_HOME/conf/zoo.cfg
+ 
+# 定义启动命令和关闭命令
+START_COMMAND="$ZOOKEEPER_HOME/bin/zkServer.sh start $ZOOKEEPER_CONF"
+STOP_COMMAND="$ZOOKEEPER_HOME/bin/zkServer.sh stop $ZOOKEEPER_CONF"
+ 
+# 启动zookeeper集群
+start() {
+  # 循环启动每个节点
+  for node in "${NODES[@]}"; do
+    ssh ${node} "export JAVA_HOME=/usr/local/java && $START_COMMAND"
+  done
+}
+
+# 关闭zookeeper集群
+stop() {
+  # 循环关闭每个节点
+  for node in "${NODES[@]}"; do
+    ssh ${node} "export JAVA_HOME=/usr/local/java && $STOP_COMMAND"
+  done
+}
+ 
+# 判断命令行参数，执行相应操作
+case $1 in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  *)
+    echo "Usage: $0 {start|stop}"
+    exit 1
+esac
+exit 0

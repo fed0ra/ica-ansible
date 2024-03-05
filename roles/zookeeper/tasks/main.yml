@@ -1,0 +1,72 @@
+---
+- name: debug package variable
+  debug:
+    var: package
+
+- name: "1、创建临时目录"
+  file: dest={{ tmp_dir }} state=directory
+
+- name: "2、拷贝zookeeper二进制包"
+  copy: src={{ software_dir }}/apache-zookeeper-{{ zookeeper_version }}-bin.tar.gz dest={{ tmp_dir }}
+  #when: package is defined
+  when: hostvars[inventory_hostname]['package'] == "true"
+
+- name: "2、下载zookeeper二进制包"
+  get_url:
+    url: "https://archive.apache.org/dist/zookeeper/zookeeper-{{ zookeeper_version }}/apache-zookeeper-{{ zookeeper_version }}-bin.tar.gz"
+    validate_certs: false
+    dest: "{{ tmp_dir }}"
+    mode: "0644"
+    force: true
+  #when: package is not defined
+  when: hostvars[inventory_hostname]['package'] == "false"
+
+- name: "3、解压zookeeper二进制包"
+  unarchive: src={{ tmp_dir }}/apache-zookeeper-{{ zookeeper_version }}-bin.tar.gz dest={{ tmp_dir }}
+
+- name: "4、移动zookeeper目录"
+  command: mv {{ tmp_dir }}/apache-zookeeper-{{ zookeeper_version }}-bin {{ zookeeper_install_path }}/apache-zookeeper-{{ zookeeper_version }}-bin
+
+- name: "5、创建数据目录"
+  file: dest={{ item }} state=directory
+  with_items:
+    - "{{ zookeeper_data_dir }}/zkdata-{{ hostvars[inventory_hostname]['myid'] }}"
+    - "{{ zookeeper_install_path }}/apache-zookeeper-{{ zookeeper_version }}-bin/logs"
+
+- name: "6、生成myid文件"
+  template:
+    src: "myid.j2"
+    dest: "{{ zookeeper_data_dir }}/zkdata-{{ hostvars[inventory_hostname]['myid'] }}/myid"
+
+- name: "7、生成zoo.cfg配置文件"
+  template:
+    src: "zoo.cfg.j2"
+    dest: "{{ zookeeper_install_path }}/apache-zookeeper-{{ zookeeper_version }}-bin/conf/zoo.cfg"
+
+- name: "8、生成集群启停脚本zookeeper.sh"
+  template:
+    src: "zookeeper.sh.j2"
+    dest: "{{ zookeeper_install_path }}/apache-zookeeper-{{ zookeeper_version }}-bin/bin/zookeeper.sh"
+    mode: 0755
+
+- name: "9、生成集群检查脚本jps-callsh"
+  template:
+    src: "jps-call.sh.j2"
+    dest: "{{ zookeeper_install_path }}/apache-zookeeper-{{ zookeeper_version }}-bin/bin/jps-call.sh"
+    mode: 0755
+
+- name: "10、创建zookeeper链接文件"
+  file:
+    src: "{{ zookeeper_install_path }}/apache-zookeeper-{{ zookeeper_version }}-bin"
+    dest: "{{ zookeeper_install_path }}/{{ zookeeper_link }}"
+    state: link
+
+- name: "11、启动zookeeper集群"
+  shell: "export JAVA_HOME={{ jdk_path }}/{{ jdk_link }} && {{ zookeeper_install_path }}/{{ zookeeper_link }}/bin/zkServer.sh start {{ zookeeper_install_path }}/{{ zookeeper_link }}/conf/zoo.cfg"
+  register: zookeeper_msg
+
+- name: "12、打印启动信息"
+  ansible.builtin.debug:
+    var: zookeeper_msg.stdout_lines
+  changed_when: false
+

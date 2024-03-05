@@ -1,0 +1,14 @@
+#!/bin/bash
+# 在各个节点执行jps查看jvm进程
+
+# 在/usr/local/bin目录下创建jpscall文件，修改集群主机IP地址，赋予执行权限
+# mv jps-call.sh /usr/local/bin/jpscall && chmod +x /usr/local/bin/jpscall
+
+# 定义节点
+ZK_NODES=({% for host in groups['zookeeper'] %}"{{ host }}" {% endfor %})
+ 
+# 查看每个节点上所有的Java进程
+for node in "${ZK_NODES[@]}"; do
+    echo "Java processes on ${node}:"
+    ssh ${node} "/usr/local/java/bin/jps"
+done

@@ -1,0 +1,240 @@
+#!/bin/bash
+#--------------------------------------------------
+# This script is used for: 
+#   to download the binaries needed for installing a cluster addon with ica-ansible
+# @author:   lmy
+# @usage:    ./icadown
+# @repo:     https://github.com/
+#--------------------------------------------------
+set -o nounset
+set -o errexit
+set -o pipefail
+#set -o xtrace
+
+cat ./group_vars/all.yml | grep -e "version" -e "software_dir"| sed "s/: /=/g" > ./tmp
+. ./tmp
+
+function usage() {
+  echo -e "\033[33mUsage:\033[0m icadown [options] [args]"
+  cat <<EOF
+  option:
+    -D              download default binaries into "$software_dir"
+    -P <package>    download packages of the binaries (mysql,docker,zookeeper...)
+EOF
+}
+
+function usage-down-packages(){
+  echo -e "\033[33mUsage:\033[0m ezdown -P <package>"
+  cat <<EOF
+available PKes:
+    mysql             to download package of MySQL
+    docker            to download package of Docker
+    zookeeper         to download package of Zookeeper
+    nginx             to download package of nginx
+    keepalived        to download package of keepalived
+    maven             to download package of maven
+    jdk               to download package of jdk
+examples:
+    ./ezdown -P mysql
+EOF
+}
+
+function logger() {
+  TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S')
+  case "$1" in
+    debug)
+      echo -e "$TIMESTAMP \033[36mDEBUG\033[0m $2"
+      ;;
+    info)
+      echo -e "$TIMESTAMP \033[32mINFO\033[0m $2"
+      ;;
+    warn)
+      echo -e "$TIMESTAMP \033[33mWARN\033[0m $2"
+      ;;
+    error)
+      echo -e "$TIMESTAMP \033[31mERROR\033[0m $2"
+      ;;
+    *)
+      ;;
+  esac
+}
+
+function download_mysql() {
+  MYSQL_URL="https://cdn.mysql.com/archives/mysql-8.0/mysql-${mysql_version}-linux-glibc2.12-${ARCH}.tar.xz"
+
+  if [[ -f "$BASE/mysql-${mysql_version}-linux-glibc2.12-${ARCH}.tar.xz" ]];then
+    logger warn "mysql binaries already existed"
+  else
+    logger info "downloading mysql binaries, arch:$ARCH, version:${mysql_version}"
+    if [[ -e /usr/bin/wget ]];then
+      wget -c --no-check-certificate "$MYSQL_URL" || { logger error "downloading mysql failed"; exit 1; }
+    else
+      curl -k -C- -O --retry 3 "$MYSQL_URL" || { logger error "downloading mysql failed"; exit 1; }
+    fi
+    mv -f "./mysql-${mysql_version}-linux-glibc2.12-${ARCH}.tar.xz" "$BASE/"
+  fi
+}
+
+function download_docker() {
+  DOCKER_URL="https://mirrors.aliyun.com/docker-ce/linux/static/stable/${ARCH}/docker-${docker_version}.tgz"
+  DOCKER_COMPOSE_URL="https://github.com/docker/compose/releases/download/v${docker_compose_version}/docker-compose-linux-$ARCH"
+
+  if [[ -f "$BASE/docker-${docker_version}.tgz" ]];then
+    logger warn "docker binaries already existed"
+  else
+    logger info "downloading docker binaries, arch:$ARCH, version:${docker_version}"
+    if [[ -e /usr/bin/wget ]];then
+      wget -c --no-check-certificate "$DOCKER_URL" || { logger error "downloading docker failed"; exit 1; }
+    else
+      curl -k -C- -O --retry 3 "$DOCKER_URL" || { logger error "downloading docker failed"; exit 1; }
+    fi
+    mv -f "./docker-${docker_version}.tgz" "$BASE/"
+  fi
+
+  if [[ -f "$BASE/docker-compose-linux-$ARCH" ]];then
+    logger warn "docker-compose binaries already existed"
+  else
+    logger info "downloading docker-compose binaries, arch:$ARCH, version:${docker_compose_version}"
+    if [[ -e /usr/bin/wget ]];then
+      wget -c --no-check-certificate "$DOCKER_COMPOSE_URL" || { logger error "downloading docker-compose failed"; exit 1; }
+    else
+      curl -k -C- -O --retry 3 "$DOCKER_COMPOSE_URL" || { logger error "downloading docker-compose failed"; exit 1; }
+    fi
+    mv -f "./docker-compose-linux-$ARCH" "$BASE/docker-compose"
+  fi
+}
+
+function download_zookeeper() {
+  ZOOKEEPER_URL="https://archive.apache.org/dist/zookeeper/zookeeper-${zookeeper_version}/apache-zookeeper-${zookeeper_version}-bin.tar.gz"
+
+  if [[ -f "$BASE/apache-zookeeper-${zookeeper_version}-bin.tar.gz" ]];then
+    logger warn "zookeeper binaries already existed"
+  else
+    logger info "downloading zookeeper binaries, arch:$ARCH, version:${zookeeper_version}"
+    if [[ -e /usr/bin/wget ]];then
+      wget -c --no-check-certificate "$ZOOKEEPER_URL" || { logger error "downloading zookeeper failed"; exit 1; }
+    else
+      curl -k -C- -O --retry 3 "$ZOOKEEPER_URL" || { logger error "downloading zookeeper failed"; exit 1; }
+    fi
+    mv -f "./apache-zookeeper-${zookeeper_version}-bin.tar.gz" "$BASE/"
+  fi
+}
+
+function download_nginx() {
+  NGINX_URL="https://nginx.org/download/nginx-${nginx_version}.tar.gz"
+
+  if [[ -f "$BASE/nginx-${nginx_version}.tar.gz" ]];then
+    logger warn "nginx binaries already existed"
+  else
+    logger info "downloading nginx binaries, arch:$ARCH, version:${nginx_version}"
+    if [[ -e /usr/bin/wget ]];then
+      wget -c --no-check-certificate "$NGINX_URL" || { logger error "downloading nginx failed"; exit 1; }
+    else
+      curl -k -C- -O --retry 3 "$NGINX_URL" || { logger error "downloading nginx failed"; exit 1; }
+    fi
+    mv -f "./nginx-${nginx_version}.tar.gz" "$BASE/"
+  fi
+}
+
+function download_keepalived() {
+  KEEPALIVED_URL="https://www.keepalived.org/software/keepalived-${keepalived_version}.tar.gz"
+
+  if [[ -f "$BASE/keepalived-${keepalived_version}.tar.gz" ]];then
+    logger warn "keepalived binaries already existed"
+  else
+    logger info "downloading keepalived binaries, arch:$ARCH, version:${keepalived_version}"
+    if [[ -e /usr/bin/wget ]];then
+      wget -c --no-check-certificate "$KEEPALIVED_URL" || { logger error "downloading keepalived failed"; exit 1; }
+    else
+      curl -k -C- -O --retry 3 "$KEEPALIVED_URL" || { logger error "downloading keepalived failed"; exit 1; }
+    fi
+    mv -f "./keepalived-${keepalived_version}.tar.gz" "$BASE/"
+  fi
+}
+
+function download_jdk() {
+  JDK_URL="https://repo.huaweicloud.com/java/jdk/8u151-b12/${jdk_version}"
+
+  if [[ -f "$BASE/${jdk_version}" ]];then
+    logger warn "jdk binaries already existed"
+  else
+    logger info "downloading jdk binaries, arch:$ARCH, version:${jdk_version}"
+    if [[ -e /usr/bin/wget ]];then
+      wget -c --no-check-certificate "$JDK_URL" || { logger error "downloading jdk failed"; exit 1; }
+    else
+      curl -k -C- -O --retry 3 "$JDK_URL" || { logger error "downloading jdk failed"; exit 1; }
+    fi
+    mv -f "./${jdk_version}" "$BASE/"
+  fi
+}
+
+function download_maven() {
+  MAVEN_URL="https://archive.apache.org/dist/maven/maven-3/${maven_version}/binaries/apache-maven-${maven_version}-bin.tar.gz"
+
+  if [[ -f "$BASE/nginx-${maven_version}.tar.gz" ]];then
+    logger warn "maven binaries already existed"
+  else
+    logger info "downloading maven binaries, arch:$ARCH, version:${maven_version}"
+    if [[ -e /usr/bin/wget ]];then
+      wget -c --no-check-certificate "$MAVEN_URL" || { logger error "downloading maven failed"; exit 1; }
+    else
+      curl -k -C- -O --retry 3 "$MAVEN_URL" || { logger error "downloading maven failed"; exit 1; }
+    fi
+    mv -f "./apache-maven-${maven_version}-bin.tar.gz" "$BASE/"
+  fi
+}
+
+function download_all() {
+  download_mysql && \
+  download_docker && \
+  download_zookeeper && \
+  download_nginx && \
+  download_keepalived && \
+  download_jdk && \
+  download_maven
+}
+
+### Main Lines ##################################################
+function main() {
+  BASE=$software_dir
+  if [ ! -d "$BASE" ];then
+    mkdir -p "$BASE"
+  fi
+
+  # check if use bash shell
+  readlink /proc/$$/exe|grep -q "bash" || { logger error "you should use bash shell, not sh"; exit 1; }
+  # check if use with root
+  [[ "$EUID" -ne 0 ]] && { logger error "you should run this script as root"; exit 1; }
+
+  # get architecture
+  ARCH=$(uname -m)
+
+  [[ "$#" -eq 0 ]] && { usage >&2; exit 1; }
+  
+  ACTION=""
+  while getopts "CDP:RSX:d:e:k:m:z:" OPTION; do
+      case "$OPTION" in
+        D)
+          ACTION="download_all"
+          ;;
+        P)
+          [[ $OPTARG =~ (mysql|docker|zookeeper|nginx|keepalived|maven|jdk) ]] || \
+          { usage-down-packages; exit 1; }
+          ACTION="download_$OPTARG"
+          ;;
+        ?)
+          usage
+          exit 1
+          ;;
+      esac
+  done
+  
+  [[ "$ACTION" == "" ]] && { logger error "illegal option"; usage; exit 1; }
+  
+  # excute cmd "$ACTION" 
+  logger info "Action begin: $ACTION"
+  ${ACTION} || { logger error "Action failed: $ACTION"; return 1; }
+  logger info "Action successed: $ACTION"
+}
+
+main "$@"

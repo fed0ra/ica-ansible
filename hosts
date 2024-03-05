@@ -1,3 +1,6 @@
+[test]
+192.168.133.151
+
 # Nginx节点IP
 [nginx]
 192.168.133.151
@@ -10,6 +13,30 @@
 
 # MySQL主从节点IP
 [mysql]
-192.168.133.151 master=true #package=true
-192.168.133.152 slave=true #package=true
+192.168.133.151 master=true package=true	# package: true/false
+192.168.133.152 slave=true package=true
+
+# jdk节点IP
+[jdk]
+192.168.133.151
+192.168.133.152
+192.168.133.153
+
+# maven节点
+[maven]
+192.168.133.151
+192.168.133.152
+192.168.133.153
+
+# docker、docker-compose节点
+[docker]
+192.168.133.151 package=true	# package: true/false
+192.168.133.152 package=true
+192.168.133.153 package=true
+
+# zookeeper节点
+[zookeeper]
+192.168.133.151 myid=1 package=true	# package: true/false
+192.168.133.152 myid=2 package=true
+192.168.133.153 myid=3 package=true
 

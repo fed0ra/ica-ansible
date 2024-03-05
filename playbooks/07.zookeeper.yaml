@@ -1,0 +1,5 @@
+- name: 部署zookeeper
+  gather_facts: false
+  hosts: zookeeper
+  roles:
+    - zookeeper

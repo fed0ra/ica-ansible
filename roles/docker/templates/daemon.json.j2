@@ -1,0 +1,17 @@
+{
+ "registry-mirrors": [
+  "https://mirror.ccs.tencentyun.com"
+  ],
+ "insecure-registries": [
+  "harbor.my.com"
+  ],
+ "exec-opts": [
+  "native.cgroupdriver=systemd"
+  ],
+ "log-driver": "json-file",
+ "log-opts": {
+  "max-size": "100m"
+  },
+ "storage-driver": "overlay2",
+ "data-root": "/var/lib/docker"
+}

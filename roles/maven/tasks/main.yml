@@ -1,0 +1,27 @@
+---
+- name: "1、创建临时目录"
+  file: dest={{ tmp_dir }} state=directory
+
+- name: "2、拷贝maven二进制包"
+  copy: src={{ software_dir }}/apache-maven-{{ maven_version }}-bin.tar.gz dest={{ tmp_dir }}
+
+- name: "3、解压maven二进制包"
+  unarchive: src={{ tmp_dir }}/apache-maven-{{ maven_version }}-bin.tar.gz dest={{ tmp_dir }}
+
+- name: "4、移动jdk二进制包"
+  command: mv {{ tmp_dir }}/apache-maven-{{ maven_version }} {{ maven_install_path }}
+
+- name: "5、创建链接文件"
+  file:
+    src: "{{ maven_install_path }}/apache-maven-{{ maven_version }}"
+    dest: "{{ maven_install_path }}/{{ maven_link }}"
+    state: link
+
+- name: "6、set the MAVEN_HOME environment"
+  lineinfile: dest=/etc/profile regexp="^export JAVA_HOME=" line="export JAVA_HOME={{ jdk_path }}/{{ jdk_link }}\nexport MAVEN_HOME={{ maven_install_path }}/{{ maven_link }}"
+
+- name: "7、set the PATH environment"
+  lineinfile: dest=/etc/profile regexp="^export PATH=\$PATH:" line="export PATH=$PATH:$JAVA_HOME/bin:$MAVEN_HOME/bin"
+
+- name: "8、加载配置文件"
+  shell: . /etc/profile

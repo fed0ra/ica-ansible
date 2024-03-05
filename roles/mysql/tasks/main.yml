@@ -8,7 +8,8 @@
 
 - name: "2、拷贝mysql二进制包"
   copy: src={{ software_dir }}/mysql-{{ mysql_version }}-linux-glibc2.12-x86_64.tar.xz dest={{ tmp_dir }}
-  when: package is defined
+  #when: package is defined
+  when: hostvars[inventory_hostname]['package'] == "true"
 
 - name: "2、下载mysql二进制包"
   get_url:
@@ -17,7 +18,8 @@
     dest: "{{ tmp_dir }}"
     mode: "0644"
     force: true
-  when: package is not defined
+  #when: package is not defined
+  when: hostvars[inventory_hostname]['package'] == "false"
 
 - name: "3、解压mysql二进制包"
   unarchive: src={{ tmp_dir }}/mysql-{{ mysql_version }}-linux-glibc2.12-x86_64.tar.xz dest={{ tmp_dir }}
@@ -60,7 +62,6 @@
   ansible.builtin.setup:
 
 - name: "11、安装依赖 4 Debian"
-  #package:
   apt:
     name:
       - libnuma1

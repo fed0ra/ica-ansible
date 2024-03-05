@@ -1,0 +1,5 @@
+- name: 部署maven
+  gather_facts: false
+  hosts: maven
+  roles:
+    - maven

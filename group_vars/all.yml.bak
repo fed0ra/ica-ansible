@@ -3,6 +3,7 @@ nic: 'ens32'            # 修改为实际内网网卡名，如eth0
 
 # 安装包目录 
 software_dir: '/root/my/ica-package'       # 离线安装包路径，根据实际情况需修改
+#software_dir: '/opt/src/ica-package'       # 离线安装包路径，根据实际情况需修改
 tmp_dir: '/opt/src/tmp/ica-ansible'      # 安装所需安装包临时目录
 
 ################################################################################
@@ -28,13 +29,13 @@ master_ip: '192.168.133.151'  # mysql master的IP
 
 # jdk
 jdk_path: '/usr/local'
-jdk_work_dir: 'jdk1.8.0_151'  # jdk1.8.0_141
-jdk_version: 'jdk-8u151-linux-x64.tar.gz' # jdk-8u141-linux-x64.tar.gz
+jdk_work_dir: 'jdk1.8.0_141'
+jdk_package_name: 'jdk-8u141-linux-x64.tar.gz'
 jdk_link: 'java'
 
 # maven
 maven_install_path: '/usr/local'
-maven_version: '3.6.3'
+maven_version: 'apache-maven-3.6.3'
 maven_link: 'maven'
 
 # docker

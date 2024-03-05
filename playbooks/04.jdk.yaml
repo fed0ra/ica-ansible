@@ -1,0 +1,5 @@
+- name: 部署jdk
+  gather_facts: false
+  hosts: jdk
+  roles:
+    - jdk

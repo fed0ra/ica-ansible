@@ -7,7 +7,7 @@
 ## 前提
 开通ansible管理机和其他被控端主机SSH互信
 
-可通过SSH主机批量互信认证脚本：https://github.com/fed0ra/ica-ansible/batch-sshkey
+可通过SSH主机批量互信认证脚本：https://github.com/fed0ra/batch-sshkey
 
 或者手动操作（ansible管理机上执行）
 

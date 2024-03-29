@@ -1,0 +1,12 @@
+- name: 部署all
+  gather_facts: false
+  hosts: all
+  roles:
+    - nginx
+    - keepalived
+    - mysql
+    - jdk
+    - maven
+    - docker
+    - zookeeper
+    - kafka

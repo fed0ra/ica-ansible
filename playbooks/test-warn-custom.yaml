@@ -1,0 +1,24 @@
+---
+- name: Demonstrate warn custom filter plugin
+  gather_facts: no
+  hosts: all
+
+  tasks:
+    - meta: end_play
+      when: ('file XYZ cannot be processed' | warn_custom())
+      delegate_to: localhost
+      run_once: yes
+
+- name: Test warn custom demo
+  gather_facts: no
+  hosts: all
+
+  tasks:
+    - name: Set bypass_folder_warn variable
+      set_fact:
+        bypass_folder_warn: "Folder check bypass enabled, make sure you know what you are doing"
+    - noop:
+        noop: '{{ bypass_folder_warn | warn_custom()}}'
+      delegate_to: localhost
+      when: bypass_folder_warn  #check
+

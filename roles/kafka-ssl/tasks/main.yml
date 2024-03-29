@@ -1,0 +1,8 @@
+---
+- name: "1、生成kafka SSL证书脚本"
+  template:
+    src: "create-kafka-ssl-certificates.sh.j2"
+    dest: "{{ tmp_dir }}/create-kafka-ssl-certificates.sh"
+    mode: 0755
+- name: "2、生成kafka SSL证书"
+  shell: "bash {{ tmp_dir }}/create-kafka-ssl-certificates.sh"

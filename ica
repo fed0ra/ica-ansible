@@ -9,11 +9,17 @@ available steps:
     01  nginx              to install nginx external loadbalance
     02  keepalived         to install keepalived high availability for nginx(1 master and 1 backup)
     03  mysql              to install mysql(1 master and n slave)
-    80  all                to run 01~03 all at once 
+    04  jdk                to install jdk
+    05  maven              to install maven
+    06  docker             to install docker and docker-compose
+    07  zookeeper          to install zookeeper cluster
+    08  kafka              to install kafka cluster
+    09  kafka-kraft        to install kafka kraft mode cluster
+    90  all                to run 01~08 all at once 
 
 examples: ./ica 01  (or ./ica nginx)
           ./ica 03  (or ./ica mysql)
-          ./ica all (or ./ica 80)
+          ./ica all (or ./ica 90)
 
 EOF
 }
@@ -31,8 +37,26 @@ function setup() {
       (03|mysql)
           PLAY_BOOK="03.mysql.yaml"
           ;;
-      (80|all)
-          PLAY_BOOK="80.all.yml"
+      (04|jdk)
+          PLAY_BOOK="04.jdk.yaml"
+          ;;
+      (05|maven)
+          PLAY_BOOK="05.maven.yaml"
+          ;;
+      (06|docker)
+          PLAY_BOOK="06.docker.yaml"
+          ;;
+      (07|zookeeper)
+          PLAY_BOOK="07.zookeeper.yaml"
+          ;;
+      (08|kafka)
+          PLAY_BOOK="08.kafka.yaml"
+          ;;
+      (09|kafka-kraft)
+          PLAY_BOOK="09.kafka-kraft.yaml"
+          ;;
+      (90|all)
+          PLAY_BOOK="90.all.yml"
           ;;
       (*)
     	      usage

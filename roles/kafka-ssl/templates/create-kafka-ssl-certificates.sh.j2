@@ -1,0 +1,46 @@
+#! /bin/bash
+# 创建kafka SSL证书脚本
+
+# 证书路径
+CA_HOME=/usr
+CERT_OUTPUT_PATH="$CA_HOME/certificates/kafka"
+
+KEY_STORE="$CERT_OUTPUT_PATH/server.keystore.jks"
+TRUST_STORE="$CERT_OUTPUT_PATH/server.truststore.jks"
+CERT_AUTH_FILE="$CERT_OUTPUT_PATH/ca-cert"
+CLUSTER_CERT_FILE="$CERT_OUTPUT_PATH/server.cert-file"
+
+DOMAIN_NAME={{ domain_name }}
+DAYS_VALID=365
+PASSWORD={{ password }}
+KEY_PASSWORD=$PASSWORD
+STORE_PASSWORD=$PASSWORD
+TRUST_STORE_PASSWORD=$PASSWORD
+TRUST_KEY_PASS=$PASSWORD
+CLUSTER_NAME=kafka
+D_NAME="CN=*.$DOMAIN_NAME, OU=kafka, O=kafka, L=bj, ST=bj, C=CN"
+SUBJ="/C=CN/ST=bj/L=bj/O=kafka/OU=kafka/CN=*.my.com"
+
+# 【第一步】创建存储目录
+mkdir -p $CERT_OUTPUT_PATH
+
+# 【第二步】创建KeyStore密钥库
+keytool -keystore $KEY_STORE -alias $CLUSTER_NAME -validity $DAYS_VALID -genkey -keyalg RSA -storepass "$STORE_PASSWORD" -keypass "$KEY_PASSWORD" -dname "$D_NAME"
+
+# 【第三步】创建CA（Certificate Authority：认证机构）
+openssl req -new -x509 -keyout $CERT_OUTPUT_PATH/ca-key -out $CERT_AUTH_FILE -days $DAYS_VALID -passin pass:123456 -passout pass:123456 -subj "$SUBJ"
+
+# 【第四步】将CA导入到TrustStore中
+keytool -keystore "$TRUST_STORE" -alias CARoot -import -file "$CERT_AUTH_FILE" -storepass "$TRUST_STORE_PASSWORD" -keypass "$TRUST_KEY_PASS" -noprompt
+
+#【第五步】导出证书
+keytool -keystore $KEY_STORE -alias $CLUSTER_NAME -certreq -file $CLUSTER_CERT_FILE -storepass "$STORE_PASSWORD" -keypass "$KEY_PASSWORD"
+
+#【第六步】给证书签名
+openssl x509 -req -CA $CERT_AUTH_FILE -CAkey $CERT_OUTPUT_PATH/ca-key -in $CLUSTER_CERT_FILE -out ${CLUSTER_CERT_FILE}-signed -days $DAYS_VALID -CAcreateserial -passin pass:"$PASSWORD"
+
+#【第七步】导入CA到KeyStore
+keytool -keystore $KEY_STORE -alias CARoot -import -file $CERT_AUTH_FILE -storepass "$STORE_PASSWORD" -keypass "$KEY_PASSWORD" -noprompt
+
+#【第八步】导入证书到KeyStore
+keytool -keystore $KEY_STORE -alias kafka -import -file "${CLUSTER_CERT_FILE}-signed" -storepass "$STORE_PASSWORD" -keypass "$KEY_PASSWORD"

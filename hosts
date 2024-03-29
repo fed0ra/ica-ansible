@@ -40,3 +40,8 @@
 192.168.133.152 myid=2 package=true
 192.168.133.153 myid=3 package=true
 
+# kafka节点，nodeid为Kraft模式使用
+[kafka]
+192.168.133.151 brokerid=0 nodeid=1 package=true	# package: true/false
+192.168.133.152 brokerid=1 nodeid=2 package=true
+192.168.133.153 brokerid=2 nodeid=3 package=true

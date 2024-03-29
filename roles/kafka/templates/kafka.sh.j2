@@ -1,0 +1,45 @@
+#!/bin/bash
+# kafka集群启动关闭脚本
+
+# 定义kafka集群节点列表
+NODES=({% for host in groups['kafka'] %}"{{ host }}" {% endfor %})
+
+# 定义kafka安装路径
+KAFKA_HOME={{ kafka_install_path }}/{{ kafka_link }}
+ 
+# 定义kafka配置文件路径
+KAFKA_CONF=$KAFKA_HOME/config/server.properties
+
+# 定义启动命令和关闭命令
+START_COMMAND="$KAFKA_HOME/bin/kafka-server-start.sh -daemon $KAFKA_CONF"
+STOP_COMMAND="$KAFKA_HOME/bin/kafka-server-stop.sh"
+ 
+# 启动kafka集群
+start() {
+  # 循环启动每个节点
+  for node in "${NODES[@]}"; do
+    ssh ${node} "export JAVA_HOME=/usr/local/java && $START_COMMAND" && echo "Kafka started successfully"
+  done
+}
+ 
+# 关闭kafka集群
+stop() {
+  # 循环关闭每个节点
+  for node in "${NODES[@]}"; do
+    ssh ${node} "export JAVA_HOME=/usr/local/java && $STOP_COMMAND" && echo "Kafka stopd"
+  done
+}
+ 
+# 判断命令行参数，执行相应操作
+case $1 in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  *)
+    echo "Usage: $0 {start|stop}"
+    exit 1
+esac
+exit 0

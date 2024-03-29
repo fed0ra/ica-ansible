@@ -1,0 +1,10 @@
+- name: 生成kafka证书 
+  gather_facts: false
+  hosts: localhost 
+  roles:
+    - kafka-ssl
+- name: 部署kafka kraft模式
+  gather_facts: false
+  hosts: kafka
+  roles:
+    - kafka-kraft

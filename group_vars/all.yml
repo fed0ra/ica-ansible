@@ -1,6 +1,9 @@
 # 网卡
 nic: 'ens32'            # 修改为实际内网网卡名，如eth0
 
+# set bypass_folder_warn variable for warn custom filter plugin
+#bypass_folder_warn: "Folder check bypass enabled, make sure you know what you are doing"
+
 # 安装包目录 
 software_dir: '/root/my/ica-package'       # 离线安装包路径，根据实际情况需修改
 tmp_dir: '/opt/src/tmp/ica-ansible'      # 安装所需安装包临时目录
@@ -52,5 +55,11 @@ zookeeper_install_path: '/opt'
 zookeeper_data_dir: '/data/zookeeper'
 zookeeper_link: 'zookeeper'
 
-
+# kafka or kafka kraft
+kafka_version: '3.6.0'  # 2.6.0. If you use kafka kraft mode deployment, the kafka version needs to be >= 2.8
+kafka_install_path: '/opt'
+kafka_data_dir: '/data/kafka'
+kafka_link: 'kafka'
+password: '123456'
+domain_name: 'my.com'
 

@@ -1,0 +1,124 @@
+# 设置节点id
+node.id={{ hostvars[inventory_hostname]['nodeid'] }}
+# 配置集群选举节点，用于选举Master,每个节点都必须配置
+controller.quorum.voters={% for host in groups['kafka'] %}{{ hostvars[host]['nodeid'] }}@{{ host }}:9093{% if not loop.last %},{% endif %}{% endfor %}
+
+# 角色可同时为broker和controller
+process.roles=broker,controller
+
+# 增加监听地址和端口(对外公开的端口)
+advertised.listeners=SSL://k{{ hostvars[inventory_hostname]['nodeid'] }}.{{ domain_name }}:2109{{ hostvars[inventory_hostname]['nodeid'] }},PLAINTEXT://{{ inventory_hostname }}:9092
+# 9092为每个broker的通信端口，9093为controller节点的通信端口，如果一个节点是混合节点那就需要同时监听两个端口
+listeners=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,SSL://0.0.0.0:9094
+# broker内部监听协议
+inter.broker.listener.name=PLAINTEXT
+controller.listener.names=CONTROLLER
+listener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,SSL:SSL,SASL_PLAINTEXT:SASL_PLAINTEXT,SASL_SSL:SASL_SSL
+
+ssl.truststore.location={{ kafka_install_path }}/{{ kafka_link }}/ssl/server.truststore.jks
+ssl.truststore.password={{ password }}
+ssl.keystore.location={{ kafka_install_path }}/{{ kafka_link }}/ssl/server.keystore.jks
+ssl.keystore.password={{ password }}
+ssl.key.password={{ password }}
+ssl.enabled.protocols=TLSv1.2,TLSv1.1,TLSv1
+ssl.client.auth=required
+ssl.keystore.type=JKS
+ssl.truststore.type=JKS
+#security.inter.broker.protocol=PLAINTEXT
+
+num.network.threads=3
+num.io.threads=8
+socket.send.buffer.bytes=102400
+socket.receive.buffer.bytes=102400
+socket.request.max.bytes=104857600
+# kafka数据默认存储的地方
+log.dirs={{ kafka_data_dir }}/kafkadata-{{ hostvars[inventory_hostname]['nodeid'] }}
+# 每一个topic默认的分区
+num.partitions=1
+# 恢复线程
+num.recovery.threads.per.data.dir=1
+auto.create.topics.enable=true
+auto.leader.rebalance.enable=true
+background.threads=10
+compression.type=producer
+delete.topic.enable=true
+leader.imbalance.check.interval.seconds=300
+leader.imbalance.per.broker.percentage=10
+log.flush.interval.messages=9223372036854775807
+log.flush.offset.checkpoint.interval.ms=60000
+log.flush.scheduler.interval.ms=9223372036854775807
+log.retention.bytes=-1
+# 数据的存储时间
+log.retention.hours=720
+log.roll.hours=720
+log.roll.jitter.hours=0
+# 设置kafka一个数据段最大值1G
+log.segment.bytes=1073741824
+log.segment.delete.delay.ms=60000
+message.max.bytes=5242880
+min.insync.replicas=1
+num.replica.fetchers=1
+offsets.commit.required.acks=-1
+offset.metadata.max.bytes=4096
+offsets.load.buffer.size=5242880
+offsets.retention.check.interval.ms=600000
+offsets.retention.minutes=1440
+offsets.topic.compression.codec=0
+offsets.topic.num.partitions=50 
+offsets.commit.timeout.ms=5000
+# 用于存储消费者组的消费偏移量信息的特殊主题，用于在发生故障时或者重新加入时能够恢复到之前的消费位置
+offsets.topic.replication.factor=3
+offsets.topic.segment.bytes=104857600
+queued.max.requests=500
+quota.consumer.default=9223372036854775807
+quota.producer.default=9223372036854775807
+replica.fetch.min.bytes=1
+replica.fetch.wait.max.ms=500
+replica.high.watermark.checkpoint.interval.ms=5000
+replica.lag.time.max.ms=10000
+replica.socket.receive.buffer.bytes=65536
+replica.socket.timeout.ms=30000
+request.timeout.ms=30000
+# 用于存储事务状态信息的特殊主题，kafka支持事务性写入，当生产者使用事务模式写入数据时，信息会写入这个主题
+transaction.state.log.replication.factor=1
+transaction.state.log.min.isr=1
+group.initial.rebalance.delay.ms=0
+default.replication.factor=3
+broker.id.generation.enable=true
+unclean.leader.election.enable=true
+#zookeeper.session.timeout.ms=6000
+#zookeeper.set.acl=false
+connections.max.idle.ms=600000
+controlled.shutdown.enable=true
+controlled.shutdown.max.retries=3
+controlled.shutdown.retry.backoff.ms=5000
+controller.socket.timeout.ms=30000
+fetch.purgatory.purge.interval.requests=1000
+group.max.session.timeout.ms=300000
+group.min.session.timeout.ms=6000
+log.cleaner.backoff.ms=15000
+log.cleaner.dedupe.buffer.size=134217728
+log.cleaner.delete.retention.ms=86400000
+log.cleaner.enable=true
+log.cleaner.io.buffer.load.factor=0.9
+log.cleaner.io.buffer.size=524288
+log.cleaner.io.max.bytes.per.second=1.7976931348623157E308
+log.cleaner.min.cleanable.ratio=0.5
+log.cleaner.min.compaction.lag.ms=0
+log.cleaner.threads=1
+log.cleanup.policy=delete
+log.index.interval.bytes=4096
+log.index.size.max.bytes=10485760
+log.message.timestamp.difference.max.ms=9223372036854775807
+log.message.timestamp.type=CreateTime
+log.preallocate=false
+# 检查数据过期时间300s一次
+log.retention.check.interval.ms=300000 
+max.connections.per.ip=2147483647
+producer.purgatory.purge.interval.requests=1000
+replica.fetch.backoff.ms=1000
+replica.fetch.max.bytes=6291456
+max.request.size=5242880
+fetch.message.max.bytes=6291456
+replica.fetch.response.max.bytes=10485760
+reserved.broker.max.id=1000

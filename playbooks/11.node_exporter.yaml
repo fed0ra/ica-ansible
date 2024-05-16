@@ -1,0 +1,5 @@
+- name: 部署node_exporter
+  gather_facts: false
+  hosts: node_exporter
+  roles:
+    - node_exporter

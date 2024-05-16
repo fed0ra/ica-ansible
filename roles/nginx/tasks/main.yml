@@ -6,7 +6,7 @@
   copy: src={{ software_dir }}/nginx-{{ nginx_version }}.tar.gz dest={{ tmp_dir }}
 
 - name: "3、解压nginx源码"
-  unarchive: src={{ tmp_dir }}/nginx-{{ nginx_version }}.tar.gz dest={{ tmp_dir }}
+  unarchive: src={{ tmp_dir }}/nginx-{{ nginx_version }}.tar.gz dest={{ tmp_dir }} remote_src=true
 
 - name: "4、安装编译器"
   package:
@@ -29,7 +29,7 @@
   template: src=nginx.conf.j2 dest={{ nginx_work_dir }}/conf/nginx.conf
 
 - name: "8、拷贝nginx.service文件"
-  template: src=nginx.service.j2 dest=/usr/lib/systemd/system/nginx.service
+  template: src=nginx.service.j2 dest=/etc/systemd/system/nginx.service
 
 - name: "9、启动nginx服务"
   ignore_errors: yes

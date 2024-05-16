@@ -22,7 +22,7 @@
   when: hostvars[inventory_hostname]['package'] == "false"
 
 - name: "3、解压mysql二进制包"
-  unarchive: src={{ tmp_dir }}/mysql-{{ mysql_version }}-linux-glibc2.12-x86_64.tar.xz dest={{ tmp_dir }}
+  unarchive: src={{ tmp_dir }}/mysql-{{ mysql_version }}-linux-glibc2.12-x86_64.tar.xz dest={{ tmp_dir }} remote_src=true
 
 - name: "4、移动mysql二进制包"
   command: mv {{ tmp_dir }}/mysql-{{ mysql_version }}-linux-glibc2.12-x86_64 {{ mysql_work_dir }}-{{ mysql_version }}
@@ -97,7 +97,7 @@
     msg: "{{ mysql_init_passwd.stdout }}"
 
 - name: "16、配置systemd守护进程"
-  template: src=mysqld.service.j2 dest=/usr/lib/systemd/system/mysqld.service
+  template: src=mysqld.service.j2 dest=/etc/systemd/system/mysqld.service
 
 - name: "17、启动mysqld服务"
   systemd:

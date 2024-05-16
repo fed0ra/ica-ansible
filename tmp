@@ -1,0 +1,13 @@
+software_dir='/root/my/ica-package'       # 离线安装包路径，根据实际情况需修改
+nginx_version='1.22.1'
+keepalived_version='2.2.7'
+mysql_version='8.0.28'
+jdk_version='jdk-8u151-linux-x64.tar.gz' # jdk-8u141-linux-x64.tar.gz
+maven_version='3.6.3'
+docker_version='24.0.6'
+docker_compose_version='2.24.6'
+zookeeper_version='3.5.10'
+kafka_version='3.6.0'  # 2.6.0. If you use kafka kraft mode deployment, the kafka version needs to be >= 2.8
+prometheus_version='2.45.5'
+node_exporter_version='1.8.0'
+alertmanager_version='0.27.0'

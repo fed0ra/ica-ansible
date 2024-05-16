@@ -1,0 +1,13 @@
+[Unit]
+Description=Node exporter Server
+Documentation=https://prometheus.io/docs/introduction/overview/
+After=network-online.target
+
+[Service]
+User=prometheus
+Restart=on-failure
+# 修改这里的 ExecStart 为指定的路径
+ExecStart={{ node_exporter_install_path }}/{{ node_exporter_link }}/node_exporter --web.listen-address=:{{ node_exporter_port }}
+
+[Install]
+WantedBy=multi-user.target

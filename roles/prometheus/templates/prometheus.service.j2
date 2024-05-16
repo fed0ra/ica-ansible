@@ -1,0 +1,15 @@
+[Unit]
+Description=Prometheus Server
+Documentation=https://prometheus.io/docs/introduction/overview/
+After=network-online.target
+
+[Service]
+User=prometheus
+Restart=on-failure
+# Change this line if you download the
+# Prometheus on different path user
+# 修改这里的 ExecStart 为指定的 prometheus.yml 文件路径
+ExecStart={{ prometheus_install_path }}/{{ prometheus_link }}/prometheus --config.file={{ prometheus_install_path }}/{{ prometheus_link }}/prometheus.yml --storage.tsdb.path={{ prometheus_data_dir }}/data
+
+[Install]
+WantedBy=multi-user.target

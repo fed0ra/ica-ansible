@@ -10,3 +10,6 @@
     - docker
     - zookeeper
     - kafka
+    - kafka-kraft
+    - prometheus
+    - node_exporter

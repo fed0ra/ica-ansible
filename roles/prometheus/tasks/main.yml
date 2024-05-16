@@ -1,0 +1,86 @@
+---
+- name: debug package variable
+  debug:
+    var: package
+
+- name: "1、停止残留的prometheus"
+  ignore_errors: yes
+  systemd:
+    name: prometheus
+    state: stopped
+  become: yes
+
+- name: "2、清理可能的prometheus service残留文件"
+  file:
+    path: /etc/systemd/system/prometheus.service
+    state: absent
+  become: yes
+
+- name: "3、清理可能的prometheus残留文件夹"
+  file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - '{{ prometheus_install_path }}/{{ prometheus_link }}'
+    - '{{ prometheus_install_path }}/prometheus-{{ prometheus_version }}'
+    - '{{ prometheus_data_dir }}'
+
+- name: "4、创建临时目录"
+  file: dest={{ tmp_dir }} state=directory
+
+- name: "5、拷贝prometheus二进制包"
+  copy: src={{ software_dir }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz dest={{ tmp_dir }}
+  when: hostvars[inventory_hostname]['package'] == "true"
+
+- name: "5、下载prometheus二进制包"
+  get_url:
+    url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+    validate_certs: false
+    dest: "{{ tmp_dir }}"
+    mode: "0644"
+    force: true
+  when: hostvars[inventory_hostname]['package'] == "false"
+
+- name: "6、解压prometheus二进制包"
+  unarchive: src={{ tmp_dir }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz dest={{ tmp_dir }} remote_src=true
+
+- name: "7、移动prometheus二进制包"
+  command: mv {{ tmp_dir }}/prometheus-{{ prometheus_version }}.linux-amd64 {{ prometheus_install_path }}/prometheus-{{ prometheus_version }}
+
+- name: "8、创建{{ prometheus_install_user }}用户"
+  user:
+    name: "{{ prometheus_install_user }}"
+    shell: /sbin/nologin
+
+- name: "9、创建链接文件"
+  file:
+    src: "{{ prometheus_install_path }}/prometheus-{{ prometheus_version }}"
+    dest: "{{ prometheus_install_path }}/{{ prometheus_link }}"
+    owner: "{{ prometheus_install_user }}"
+    group: "{{ prometheus_install_user }}"
+    state: link
+
+- name: "10、创建数据目录"
+  file: dest={{ item }} state=directory
+  with_items:
+    - "{{ prometheus_data_dir }}/data"
+
+- name: "11、修改数据目录权限"
+  file: 
+    path: "{{ item }}"
+    owner: "{{ prometheus_install_user }}"
+    group: "{{ prometheus_install_user }}"
+    state: directory
+  with_items:
+    - "{{ prometheus_data_dir }}"
+    - "{{ prometheus_data_dir }}/data"
+
+- name: "12、配置systemd守护进程"
+  template: src=prometheus.service.j2 dest=/etc/systemd/system/prometheus.service
+
+- name: "13、启动prometheus服务"
+  systemd:
+    name: prometheus
+    state: started
+    daemon_reload: yes
+    enabled: yes

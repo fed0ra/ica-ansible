@@ -15,7 +15,10 @@ available steps:
     07  zookeeper          to install zookeeper cluster
     08  kafka              to install kafka cluster
     09  kafka-kraft        to install kafka kraft mode cluster
-    90  all                to run 01~08 all at once 
+    10  prometheus         to install prometheus server
+    11  node_exporter      to install node_exporter
+    12  alertmanager       to install alertmanager
+    90  all                to run 01~11 all at once 
 
 examples: ./ica 01  (or ./ica nginx)
           ./ica 03  (or ./ica mysql)
@@ -54,6 +57,15 @@ function setup() {
           ;;
       (09|kafka-kraft)
           PLAY_BOOK="09.kafka-kraft.yaml"
+          ;;
+      (10|prometheus)
+          PLAY_BOOK="10.prometheus.yaml"
+          ;;
+      (11|node_exporter)
+          PLAY_BOOK="11.node_exporter.yaml"
+          ;;
+      (12|alertmanager)
+          PLAY_BOOK="12.alertmanager.yaml"
           ;;
       (90|all)
           PLAY_BOOK="90.all.yml"

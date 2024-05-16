@@ -6,7 +6,7 @@
   copy: src={{ software_dir }}/{{ jdk_version }} dest={{ tmp_dir }}
 
 - name: "3、解压jdk二进制包"
-  unarchive: src={{ tmp_dir }}/{{ jdk_version }} dest={{ tmp_dir }}
+  unarchive: src={{ tmp_dir }}/{{ jdk_version }} dest={{ tmp_dir }} remote_src=true
 
 - name: "4、移动jdk二进制包"
   command: mv {{ tmp_dir }}/{{ jdk_work_dir }} {{ jdk_path }}

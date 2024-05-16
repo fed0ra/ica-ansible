@@ -1,0 +1,5 @@
+- name: 部署prometheus
+  gather_facts: false
+  hosts: prometheus
+  roles:
+    - prometheus

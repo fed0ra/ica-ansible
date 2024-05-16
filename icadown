@@ -35,6 +35,9 @@ available PKes:
     maven             to download package of maven
     jdk               to download package of jdk
     kafka             to download package of kafka
+    prometheus        to download package of prometheus
+    node_exporter     to download package of node_exporter
+    alertmanager     to download package of alertmanager
 examples:
     ./ezdown -P mysql
 EOF
@@ -201,6 +204,56 @@ function download_kafka() {
   fi
 }
 
+function download_prometheus() {
+  PROMETHEUS_URL="https://github.com/prometheus/prometheus/releases/download/v${prometheus_version}/prometheus-${prometheus_version}.linux-amd64.tar.gz"
+
+  if [[ -f "$BASE/prometheus-${prometheus_version}.linux-amd64.tar.gz" ]];then
+    logger warn "prometheus binaries already existed"
+  else
+    logger info "downloading prometheus binaries, arch:$ARCH, version:${prometheus_version}"
+    if [[ -e /usr/bin/wget ]];then
+      wget -c --no-check-certificate "$PROMETHEUS_URL" || { logger error "downloading prometheus failed"; exit 1; }
+    else
+      curl -k -C- -O --retry 3 "$PROMETHEUS_URL" || { logger error "downloading prometheus failed"; exit 1; }
+    fi
+    mv -f "./prometheus-${prometheus_version}.linux-amd64.tar.gz" "$BASE/"
+  fi
+}
+
+function download_node_exporter() {
+  NODE_EXPORTER_URL="https://github.com/prometheus/node_exporter/releases/download/v${node_exporter_version}/node_exporter-${node_exporter_version}.linux-amd64.tar.gz"
+
+
+  if [[ -f "$BASE/node_exporter-${node_exporter_version}.linux-amd64.tar.gz" ]];then
+    logger warn "node_exporter binaries already existed"
+  else
+    logger info "downloading node_exporter binaries, arch:$ARCH, version:${node_exporter_version}"
+    if [[ -e /usr/bin/wget ]];then
+      wget -c --no-check-certificate "$NODE_EXPORTER_URL" || { logger error "downloading node_exporter failed"; exit 1; }
+    else
+      curl -k -C- -O --retry 3 "$NODE_EXPORTER_URL" || { logger error "downloading node_exporter failed"; exit 1; }
+    fi
+    mv -f "./node_exporter-${node_exporter_version}.linux-amd64.tar.gz" "$BASE/"
+  fi
+}
+
+function download_alertmanager() {
+  ALERTMANAGER_URL="https://github.com/prometheus/alertmanager/releases/download/v${alertmanager_version}/alertmanager-${alertmanager_version}.linux-amd64.tar.gz"
+
+  if [[ -f "$BASE/alertmanager-${alertmanager_version}.linux-amd64.tar.gz" ]];then
+    logger warn "alertmanager binaries already existed"
+  else
+    logger info "downloading alertmanager binaries, arch:$ARCH, version:${alertmanager_version}"
+    if [[ -e /usr/bin/wget ]];then
+      wget -c --no-check-certificate "$ALERTMANAGER_URL" || { logger error "downloading alertmanager failed"; exit 1; }
+    else
+      curl -k -C- -O --retry 3 "$ALERTMANAGER_URL" || { logger error "downloading alertmanager failed"; exit 1; }
+    fi
+    mv -f "./alertmanager-${alertmanager_version}.linux-amd64.tar.gz" "$BASE/"
+  fi
+}
+
+
 function download_all() {
   download_mysql && \
   download_docker && \
@@ -209,7 +262,10 @@ function download_all() {
   download_keepalived && \
   download_jdk && \
   download_maven && \
-  download_kafka
+  download_kafka && \
+  download_prometheus && \
+  download_node_exporter && \
+  download_alertmanager
 }
 
 ### Main Lines ##################################################
@@ -236,7 +292,7 @@ function main() {
           ACTION="download_all"
           ;;
         P)
-          [[ $OPTARG =~ (mysql|docker|zookeeper|nginx|keepalived|jdk|maven|kafka) ]] || \
+          [[ $OPTARG =~ (mysql|docker|zookeeper|nginx|keepalived|jdk|maven|kafka|prometheus|node_exporter|alertmanager) ]] || \
           { usage-down-packages; exit 1; }
           ACTION="download_$OPTARG"
           ;;

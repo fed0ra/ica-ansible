@@ -6,7 +6,7 @@
   copy: src={{ software_dir }}/apache-maven-{{ maven_version }}-bin.tar.gz dest={{ tmp_dir }}
 
 - name: "3、解压maven二进制包"
-  unarchive: src={{ tmp_dir }}/apache-maven-{{ maven_version }}-bin.tar.gz dest={{ tmp_dir }}
+  unarchive: src={{ tmp_dir }}/apache-maven-{{ maven_version }}-bin.tar.gz dest={{ tmp_dir }} remote_src=true
 
 - name: "4、移动jdk二进制包"
   command: mv {{ tmp_dir }}/apache-maven-{{ maven_version }} {{ maven_install_path }}

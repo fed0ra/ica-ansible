@@ -1,0 +1,86 @@
+---
+- name: debug package variable
+  debug:
+    var: package
+
+- name: "1、停止残留的alertmanager"
+  ignore_errors: yes
+  systemd:
+    name: alertmanager
+    state: stopped
+  become: yes
+
+- name: "2、清理可能的alertmanager service残留文件"
+  file:
+    path: /etc/systemd/system/alertmanager.service
+    state: absent
+  become: yes
+
+- name: "3、清理可能的alertmanager残留文件夹"
+  file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - '{{ alertmanager_install_path }}/{{ alertmanager_link }}'
+    - '{{ alertmanager_install_path }}/alertmanager-{{ alertmanager_version }}'
+    - '{{ alertmanager_data_dir }}'
+
+- name: "4、创建临时目录"
+  file: dest={{ tmp_dir }} state=directory
+
+- name: "5、拷贝alertmanager二进制包"
+  copy: src={{ software_dir }}/alertmanager-{{ alertmanager_version }}.linux-amd64.tar.gz dest={{ tmp_dir }}
+  when: hostvars[inventory_hostname]['package'] == "true"
+
+- name: "5、下载alertmanager二进制包"
+  get_url:
+    url: "https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.linux-amd64.tar.gz"
+    validate_certs: false
+    dest: "{{ tmp_dir }}"
+    mode: "0644"
+    force: true
+  when: hostvars[inventory_hostname]['package'] == "false"
+
+- name: "6、解压alertmanager二进制包"
+  unarchive: src={{ tmp_dir }}/alertmanager-{{ alertmanager_version }}.linux-amd64.tar.gz dest={{ tmp_dir }} remote_src=true
+
+- name: "7、移动alertmanager二进制包"
+  command: mv {{ tmp_dir }}/alertmanager-{{ alertmanager_version }}.linux-amd64 {{ alertmanager_install_path }}/alertmanager-{{ alertmanager_version }}
+
+- name: "8、创建{{ alertmanager_install_user }}用户"
+  user:
+    name: "{{ alertmanager_install_user }}"
+    shell: /sbin/nologin
+
+- name: "9、创建链接文件"
+  file:
+    src: "{{ alertmanager_install_path }}/alertmanager-{{ alertmanager_version }}"
+    dest: "{{ alertmanager_install_path }}/{{ alertmanager_link }}"
+    owner: "{{ alertmanager_install_user }}"
+    group: "{{ alertmanager_install_user }}"
+    state: link
+
+- name: "10、创建数据目录"
+  file: dest={{ item }} state=directory
+  with_items:
+    - "{{ alertmanager_data_dir }}/data"
+
+- name: "11、修改数据目录权限"
+  file: 
+    path: "{{ item }}"
+    owner: "{{ alertmanager_install_user }}"
+    group: "{{ alertmanager_install_user }}"
+    state: directory
+  with_items:
+    - "{{ alertmanager_data_dir }}"
+    - "{{ alertmanager_data_dir }}/data"
+
+- name: "12、配置systemd守护进程"
+  template: src=alertmanager.service.j2 dest=/etc/systemd/system/alertmanager.service
+
+- name: "13、启动alertmanager服务"
+  systemd:
+    name: alertmanager
+    state: started
+    daemon_reload: yes
+    enabled: yes

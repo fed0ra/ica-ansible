@@ -6,7 +6,7 @@
   copy: src={{ software_dir }}/keepalived-2.2.7.tar.gz dest={{ tmp_dir }}
 
 - name: "3、解压keepalived源码"
-  unarchive: src={{ tmp_dir }}/keepalived-2.2.7.tar.gz dest={{ tmp_dir }}
+  unarchive: src={{ tmp_dir }}/keepalived-2.2.7.tar.gz dest={{ tmp_dir }} remote_src=true
 
 - name: "4、安装openssl等插件"
   package:
@@ -23,7 +23,7 @@
   template: src=keepalived.conf.j2 dest=/etc/keepalived/keepalived.conf
 
 - name: "7、拷贝keepalived.service文件"
-  template: src=keepalived.service.j2 dest=/usr/lib/systemd/system/keepalived.service
+  template: src=keepalived.service.j2 dest=/etc/systemd/system/keepalived.service
 
 - name: "8、拷贝nginx健康检查脚本"
   copy: src=check_nginx.sh dest=/etc/keepalived/ mode=u+x

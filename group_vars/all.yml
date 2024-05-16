@@ -63,3 +63,23 @@ kafka_link: 'kafka'
 password: '123456'
 domain_name: 'my.com'
 
+# prometheus，web ui默认端口号9090
+prometheus_version: '2.45.5'
+prometheus_install_path: '/opt'
+prometheus_link: 'prometheus'
+prometheus_install_user: 'prometheus'
+prometheus_data_dir: '/data/prometheus'
+
+# node_exporter
+node_exporter_port: '9100'    # 端口号
+node_exporter_version: '1.8.0'
+node_exporter_install_path: '/opt'
+node_exporter_link: 'node_exporter'
+node_exporter_install_user: 'prometheus'
+
+# alertmanager，web ui默认端口号9093
+alertmanager_version: '0.27.0'
+alertmanager_install_path: '/opt'
+alertmanager_link: 'node_exporter'
+alertmanager_install_user: 'prometheus'
+alertmanager_data_dir: '/data/alertmanager'

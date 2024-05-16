@@ -37,7 +37,7 @@
   when: hostvars[inventory_hostname]['package'] == "false"
 
 - name: "5、解压docker二进制包"
-  unarchive: src={{ tmp_dir }}/docker-{{ docker_version }}.tgz dest={{ tmp_dir }}
+  unarchive: src={{ tmp_dir }}/docker-{{ docker_version }}.tgz dest={{ tmp_dir }} remote_src=true
 
 - name: "6、移动docker二进制文件"
   copy: src={{ tmp_dir }}/docker/{{ item }} dest=/usr/bin mode=0755
@@ -57,7 +57,7 @@
     dest: "/etc/docker/daemon.json"
 
 - name: "8、配置systemd守护进程"
-  template: src=docker.service.j2 dest=/usr/lib/systemd/system/docker.service
+  template: src=docker.service.j2 dest=/etc/systemd/system/docker.service
 
 - name: "9、拷贝docker-compose二进制文件"
   copy: src={{ software_dir }}/docker-compose dest={{ docker_compose_bindir }} mode=0755

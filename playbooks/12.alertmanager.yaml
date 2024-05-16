@@ -1,0 +1,5 @@
+- name: 部署alertmanager
+  gather_facts: false
+  hosts: alertmanager
+  roles:
+    - alertmanager

@@ -20,7 +20,7 @@
   when: hostvars[inventory_hostname]['package'] == "false"
 
 - name: "3、解压kafka二进制包"
-  unarchive: src={{ tmp_dir }}/kafka_2.13-{{ kafka_version }}.tgz dest={{ tmp_dir }}
+  unarchive: src={{ tmp_dir }}/kafka_2.13-{{ kafka_version }}.tgz dest={{ tmp_dir }} remote_src=true
 
 - name: "4、移动kafka目录"
   command: mv {{ tmp_dir }}/kafka_2.13-{{ kafka_version }} {{ kafka_install_path }}/kafka_2.13-{{ kafka_version }}

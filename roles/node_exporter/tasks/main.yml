@@ -1,0 +1,70 @@
+---
+- name: debug package variable
+  debug:
+    var: package
+
+- name: "1、停止残留的node_exporter"
+  ignore_errors: yes
+  systemd:
+    name: node_exporter
+    state: stopped
+  become: yes
+
+- name: "2、清理可能的node_exporter service残留文件"
+  file:
+    path: /etc/systemd/system/node_exporter.service
+    state: absent
+  become: yes
+
+- name: "3、清理可能的node_exporter残留文件夹"
+  file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - '{{ node_exporter_install_path }}/{{ node_exporter_link }}'
+    - '{{ node_exporter_install_path }}/node_exporter-{{ node_exporter_version }}'
+
+- name: "4、创建临时目录"
+  file: dest={{ tmp_dir }} state=directory
+
+- name: "5、拷贝node_exporter二进制包"
+  copy: src={{ software_dir }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz dest={{ tmp_dir }}
+  when: hostvars[inventory_hostname]['package'] == "true"
+
+- name: "5、下载node_exporter二进制包"
+  get_url:
+    url: "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+    validate_certs: false
+    dest: "{{ tmp_dir }}"
+    mode: "0644"
+    force: true
+  when: hostvars[inventory_hostname]['package'] == "false"
+
+- name: "6、解压node_exporter二进制包"
+  unarchive: src={{ tmp_dir }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz dest={{ tmp_dir }} remote_src=true
+
+- name: "7、移动node_exporter二进制包"
+  command: mv {{ tmp_dir }}/node_exporter-{{ node_exporter_version }}.linux-amd64 {{ node_exporter_install_path }}/node_exporter-{{ node_exporter_version }}
+
+- name: "8、创建{{ node_exporter_install_user }}用户"
+  user:
+    name: "{{ node_exporter_install_user }}"
+    shell: /sbin/nologin
+
+- name: "9、创建链接文件"
+  file:
+    src: "{{ node_exporter_install_path }}/node_exporter-{{ node_exporter_version }}"
+    dest: "{{ node_exporter_install_path }}/{{ node_exporter_link }}"
+    owner: "{{ node_exporter_install_user }}"
+    group: "{{ node_exporter_install_user }}"
+    state: link
+
+- name: "10、配置systemd守护进程"
+  template: src=node_exporter.service.j2 dest=/etc/systemd/system/node_exporter.service
+
+- name: "11、启动node_exporter服务"
+  systemd:
+    name: node_exporter
+    state: started
+    daemon_reload: yes
+    enabled: yes

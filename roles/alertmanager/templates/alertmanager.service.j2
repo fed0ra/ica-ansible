@@ -1,0 +1,12 @@
+[Unit]
+Description=Alert manager Server
+Documentation=https://prometheus.io/docs/introduction/overview/
+After=network-online.target
+
+[Service]
+User=prometheus
+Restart=on-failure
+ExecStart={{ alertmanager_install_path }}/{{ alertmanager_link }}/alertmanager --config.file={{ alertmanager_install_path }}/{{ alertmanager_link }}/alertmanager.yml --storage.path={{ alertmanager_data_dir }}/data
+
+[Install]
+WantedBy=multi-user.target

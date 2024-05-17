@@ -174,3 +174,12 @@ May 17 10:55:18 hdss133-151.host.com alertmanager[1521304]: ts=2024-05-17T02:55:
 
 webhook服务项目地址：my/golang/alertmanager-webhook
 
+
+五、metrics接口相关
+```
+# prometheus metrics接口
+curl 192.168.133.151:9090/metrics
+
+# node_exporter metrics接口
+curl 192.168.133.152:9100/metrics
+```

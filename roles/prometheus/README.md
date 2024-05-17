@@ -139,7 +139,7 @@ receivers:
   - name: 'web.hook'
     webhook_configs:
       # alertmanager发起web请求的地址
-      - url: 'http://192.168.133.151:8888/webhook'
+      - url: 'http://192.168.133.151:8888/feishu'
 # 告警抑制规则，可以有多条
 inhibit_rules:
   # 这个规则的意思是：一旦收到critical级别的告警，那么再收到低级别(warning)的告警就没必要通知了，
@@ -151,7 +151,7 @@ inhibit_rules:
     equal: ['node']	# ['alertname', 'dev', 'instance']
 ```
 
-上面配置的webhook_configs，地址是http://192.168.133.151:8888/webhook，这是自己写的一个web服务，只要alertmanager收到prometheus发来的告警，就会调用这个web接口，需要自己写服务实现
+上面配置的webhook_configs，地址是http://192.168.133.151:8888/feishu，这是自己写的一个web服务，只要alertmanager收到prometheus发来的告警，就会调用这个web接口，需要自己写服务实现
 
 2. 重启alertmanager
 ```

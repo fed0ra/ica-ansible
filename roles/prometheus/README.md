@@ -172,4 +172,5 @@ journalctl _PID=1457375
 May 17 10:55:18 hdss133-151.host.com alertmanager[1521304]: ts=2024-05-17T02:55:18.186Z caller=notify.go:848 level=warn component=dispatcher receiver=web.hook integration=webhook[0] aggrGroup="{}:{alertname=\"hostCPUUsageTooHigh\"}" msg="Notify attempt failed, will retry later" attempts=1 err="Post \"<redacted>\": dial tcp 192.168.133.151:8888: connect: connection refused"
 ```
 
+webhook服务项目地址：my/golang/alertmanager-webhook
 

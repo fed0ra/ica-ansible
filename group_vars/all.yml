@@ -80,6 +80,6 @@ node_exporter_install_user: 'prometheus'
 # alertmanager，web ui默认端口号9093
 alertmanager_version: '0.27.0'
 alertmanager_install_path: '/opt'
-alertmanager_link: 'node_exporter'
+alertmanager_link: 'alertmanager'
 alertmanager_install_user: 'prometheus'
 alertmanager_data_dir: '/data/alertmanager'

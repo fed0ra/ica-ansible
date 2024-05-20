@@ -40,7 +40,7 @@
   unarchive: src={{ tmp_dir }}/docker-{{ docker_version }}.tgz dest={{ tmp_dir }} remote_src=true
 
 - name: "6、移动docker二进制文件"
-  copy: src={{ tmp_dir }}/docker/{{ item }} dest=/usr/bin mode=0755
+  copy: src={{ tmp_dir }}/docker/{{ item }} dest=/usr/bin mode=0755 remote_src=true
   with_items:
     - containerd
     - containerd-shim-runc-v2

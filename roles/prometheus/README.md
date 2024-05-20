@@ -139,7 +139,7 @@ receivers:
   - name: 'web.hook'
     webhook_configs:
       # alertmanager发起web请求的地址
-      - url: 'http://192.168.133.151:8888/feishu'
+      - url: 'http://192.168.133.151:6666/feishu'
 # 告警抑制规则，可以有多条
 inhibit_rules:
   # 这个规则的意思是：一旦收到critical级别的告警，那么再收到低级别(warning)的告警就没必要通知了，
@@ -151,7 +151,7 @@ inhibit_rules:
     equal: ['node']	# ['alertname', 'dev', 'instance']
 ```
 
-上面配置的webhook_configs，地址是http://192.168.133.151:8888/feishu，这是自己写的一个web服务，只要alertmanager收到prometheus发来的告警，就会调用这个web接口，需要自己写服务实现
+上面配置的webhook_configs，地址是http://192.168.133.151:6666/feishu，这是自己写的一个web服务，只要alertmanager收到prometheus发来的告警，就会调用这个web接口，需要自己写服务实现
 
 2. 重启alertmanager
 ```
@@ -168,8 +168,8 @@ prometh+ 1457375       1  0 08:50 ?        00:00:08 /opt/alertmanager/alertmanag
 # 用命令journalctl _PID=xxx查看alertmanager日志
 journalctl _PID=1457375
 
-# 内容如下所示，可见alertmanager确实根据配置向http://192.168.133.151:8888/webhook发起了web调用，遇到了connection refused错误
-May 17 10:55:18 hdss133-151.host.com alertmanager[1521304]: ts=2024-05-17T02:55:18.186Z caller=notify.go:848 level=warn component=dispatcher receiver=web.hook integration=webhook[0] aggrGroup="{}:{alertname=\"hostCPUUsageTooHigh\"}" msg="Notify attempt failed, will retry later" attempts=1 err="Post \"<redacted>\": dial tcp 192.168.133.151:8888: connect: connection refused"
+# 内容如下所示，可见alertmanager确实根据配置向http://192.168.133.151:6666/feishu发起了web调用，遇到了connection refused错误
+May 17 10:55:18 hdss133-151.host.com alertmanager[1521304]: ts=2024-05-17T02:55:18.186Z caller=notify.go:848 level=warn component=dispatcher receiver=web.hook integration=webhook[0] aggrGroup="{}:{alertname=\"hostCPUUsageTooHigh\"}" msg="Notify attempt failed, will retry later" attempts=1 err="Post \"<redacted>\": dial tcp 192.168.133.151:6666: connect: connection refused"
 ```
 
 webhook服务项目地址：my/golang/alertmanager-webhook

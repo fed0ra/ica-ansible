@@ -1,6 +1,12 @@
 {
  "registry-mirrors": [
-  "https://mirror.ccs.tencentyun.com"
+  "https://mirror.ccs.tencentyun.com",
+  "https://docker.nju.edu.cn/",
+  "https://kuamavit.mirror.aliyuncs.com",
+  "https://registry.docker-cn.com",
+  "https://docker.mirrors.ustc.edu.cn",
+  "https://dockerhub.azk8s.cn",
+  "http://hub-mirror.c.163.com"
   ],
  "insecure-registries": [
   "harbor.my.com"
@@ -9,8 +15,10 @@
   "native.cgroupdriver=systemd"
   ],
  "log-driver": "json-file",
+ "log-level": "warn",
  "log-opts": {
-  "max-size": "100m"
+  "max-size": "100m",
+  "max-file": "3"
   },
  "storage-driver": "overlay2",
  "data-root": "/var/lib/docker"

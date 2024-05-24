@@ -7,7 +7,9 @@ controller.quorum.voters={% for host in groups['kafka'] %}{{ hostvars[host]['nod
 process.roles=broker,controller
 
 # 增加监听地址和端口(对外公开的端口)
-advertised.listeners=SSL://k{{ hostvars[inventory_hostname]['nodeid'] }}.{{ domain_name }}:2109{{ hostvars[inventory_hostname]['nodeid'] }},PLAINTEXT://{{ inventory_hostname }}:9092
+advertised.listeners=SSL://{{ hostname }}.{{ domain_name }}:2109{{ hostvars[inventory_hostname]['nodeid'] }},PLAINTEXT://{{ inventory_hostname }}:9092
+# advertised.listeners=SSL://k{{ hostvars[inventory_hostname]['nodeid'] }}.{{ domain_name }}:2109{{ hostvars[inventory_hostname]['nodeid'] }},PLAINTEXT://{{ inventory_hostname }}:9092
+
 # 9092为每个broker的通信端口，9093为controller节点的通信端口，如果一个节点是混合节点那就需要同时监听两个端口
 listeners=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,SSL://0.0.0.0:9094
 # broker内部监听协议

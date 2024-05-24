@@ -19,7 +19,7 @@ TRUST_STORE_PASSWORD=$PASSWORD
 TRUST_KEY_PASS=$PASSWORD
 CLUSTER_NAME=kafka
 D_NAME="CN=*.$DOMAIN_NAME, OU=kafka, O=kafka, L=bj, ST=bj, C=CN"
-SUBJ="/C=CN/ST=bj/L=bj/O=kafka/OU=kafka/CN=*.my.com"
+SUBJ="/C=CN/ST=bj/L=bj/O=kafka/OU=kafka/CN=*.$DOMAIN_NAME"
 
 # 【第一步】创建存储目录
 mkdir -p $CERT_OUTPUT_PATH

@@ -3,7 +3,7 @@
 
 # Nginx节点IP
 [nginx]
-192.168.133.151 package=true
+192.168.133.151 package=true    # package: true/false
 192.168.133.152 package=true
 
 # Nginx高可用Keepalived节点IP
@@ -13,7 +13,7 @@
 
 # MySQL主从节点IP
 [mysql]
-192.168.133.151 master=true package=true	# package: true/false
+192.168.133.151 master=true package=true
 192.168.133.152 slave=true package=true
 
 # jdk节点IP
@@ -30,21 +30,21 @@
 
 # docker、docker-compose节点
 [docker]
-192.168.133.151 package=true	# package: true/false
+192.168.133.151 package=true
 192.168.133.152 package=true
 192.168.133.153 package=true
 
 # zookeeper节点
 [zookeeper]
-192.168.133.151 myid=1 package=true	# package: true/false
+192.168.133.151 myid=1 package=true
 192.168.133.152 myid=2 package=true
 192.168.133.153 myid=3 package=true
 
 # kafka节点，nodeid为Kraft模式使用
 [kafka]
-192.168.133.151 brokerid=0 nodeid=1 package=true	# package: true/false
-192.168.133.152 brokerid=1 nodeid=2 package=true
-192.168.133.153 brokerid=2 nodeid=3 package=true
+192.168.133.151 brokerid=0 nodeid=0 package=true
+192.168.133.152 brokerid=1 nodeid=1 package=true
+192.168.133.153 brokerid=2 nodeid=2 package=true
 
 # prometheus节点
 [prometheus]
@@ -52,7 +52,7 @@
 
 # node_exporter节点，每个被监控节点均需要安装
 [node_exporter]
-; 192.168.133.151 package=true
+192.168.133.151 package=true
 192.168.133.152 package=true
 
 # alertmanager节点，可以与prometheus在同一节点上

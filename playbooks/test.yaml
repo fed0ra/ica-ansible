@@ -1,0 +1,5 @@
+- name: 生成kafka证书 
+  gather_facts: false
+  hosts: localhost 
+  roles:
+    - kafka-ssl

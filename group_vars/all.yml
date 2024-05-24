@@ -54,6 +54,7 @@ zookeeper_version: '3.5.10'
 zookeeper_install_path: '/opt'
 zookeeper_data_dir: '/data/zookeeper'
 zookeeper_link: 'zookeeper'
+# zookeeper内网连接地址：192.168.133.151:2181,192.168.133.152:2181,192.168.133.153:2181
 
 # kafka or kafka kraft
 kafka_version: '3.6.0'  # 2.6.0. If you use kafka kraft mode deployment, the kafka version needs to be >= 2.8
@@ -62,6 +63,10 @@ kafka_data_dir: '/data/kafka'
 kafka_link: 'kafka'
 password: '123456'
 domain_name: 'my.com'
+hostname: 'kafka'
+# 证书文件位置：ansible主机/usr/certificates/kafka目录下
+# kafka公网连接地址：kafka：kafka.my.com:21090,kafka.my.com:21091,kafka.my.com:21092
+# kafka内网连接地址：192.168.133.151:9092,192.168.133.152:9092,192.168.133.153:9092
 
 # prometheus，web ui默认端口号9090
 prometheus_version: '2.45.5'

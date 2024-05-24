@@ -1,8 +1,9 @@
 broker.id={{ hostvars[inventory_hostname]['brokerid'] }}
 listeners=PLAINTEXT://0.0.0.0:9092,SSL://0.0.0.0:9192
-advertised.listeners=SSL://k{{ hostvars[inventory_hostname]['brokerid'] }}.{{ domain_name }}:2109{{ hostvars[inventory_hostname]['brokerid'] }},PLAINTEXT://{{ inventory_hostname }}:9092
+advertised.listeners=SSL://{{ hostname }}.{{ domain_name }}:2109{{ hostvars[inventory_hostname]['brokerid'] }},PLAINTEXT://{{ inventory_hostname }}:9092
+# advertised.listeners=SSL://k{{ hostvars[inventory_hostname]['brokerid'] }}.{{ domain_name }}:2109{{ hostvars[inventory_hostname]['brokerid'] }},PLAINTEXT://{{ inventory_hostname }}:9092
 listener.security.protocol.map=SSL:SSL,PLAINTEXT:PLAINTEXT
-zookeeper.connect={% for host in groups['kafka'] %}{{ host }}:2181{% if not loop.last %},{% endif %}{% endfor %}
+zookeeper.connect={% for host in groups['zookeeper'] %}{{ host }}:2181{% if not loop.last %},{% endif %}{% endfor %}
 zookeeper.connection.timeout.ms=18000
 ssl.truststore.location={{ kafka_install_path }}/{{ kafka_link }}/ssl/server.truststore.jks
 ssl.truststore.password={{ password }}

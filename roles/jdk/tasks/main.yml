@@ -1,9 +1,23 @@
 ---
+- name: debug package variable
+  debug:
+    var: package
+
 - name: "1、创建临时目录"
   file: dest={{ tmp_dir }} state=directory
 
 - name: "2、拷贝jdk二进制包"
   copy: src={{ software_dir }}/{{ jdk_version }} dest={{ tmp_dir }}
+  when: hostvars[inventory_hostname]['package'] == "true"
+
+- name: "2、下载jdk二进制包"
+  get_url:
+    url: "https://repo.huaweicloud.com/java/jdk/8u151-b12/{{ jdk_version }}"
+    validate_certs: false
+    dest: "{{ tmp_dir }}"
+    mode: "0644"
+    force: true
+  when: hostvars[inventory_hostname]['package'] == "false"
 
 - name: "3、解压jdk二进制包"
   unarchive: src={{ tmp_dir }}/{{ jdk_version }} dest={{ tmp_dir }} remote_src=true

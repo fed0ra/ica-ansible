@@ -1,9 +1,23 @@
 ---
+- name: debug package variable
+  debug:
+    var: package
+
 - name: "1、创建临时目录"
   file: dest={{ tmp_dir }} state=directory
 
 - name: "2、拷贝maven二进制包"
   copy: src={{ software_dir }}/apache-maven-{{ maven_version }}-bin.tar.gz dest={{ tmp_dir }}
+  when: hostvars[inventory_hostname]['package'] == "true"
+
+- name: "2、下载maven二进制包"
+  get_url:
+    url: "https://archive.apache.org/dist/maven/maven-3/{{ maven_version }}/binaries/apache-maven-{{ maven_version }}-bin.tar.gz"
+    validate_certs: false
+    dest: "{{ tmp_dir }}"
+    mode: "0644"
+    force: true
+  when: hostvars[inventory_hostname]['package'] == "false"
 
 - name: "3、解压maven二进制包"
   unarchive: src={{ tmp_dir }}/apache-maven-{{ maven_version }}-bin.tar.gz dest={{ tmp_dir }} remote_src=true

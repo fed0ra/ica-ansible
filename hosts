@@ -3,13 +3,13 @@
 
 # Nginx节点IP
 [nginx]
-192.168.133.151
-192.168.133.152
+192.168.133.151 package=true
+192.168.133.152 package=true
 
 # Nginx高可用Keepalived节点IP
 [keepalived]
-192.168.133.151 ha_name=ha-master 
-192.168.133.152 ha_name=ha-backup
+192.168.133.151 ha_name=ha-master package=true
+192.168.133.152 ha_name=ha-backup package=true
 
 # MySQL主从节点IP
 [mysql]
@@ -18,15 +18,15 @@
 
 # jdk节点IP
 [jdk]
-192.168.133.151
-192.168.133.152
-192.168.133.153
+192.168.133.151 package=true
+192.168.133.152 package=true
+192.168.133.153 package=true
 
 # maven节点
 [maven]
-192.168.133.151
-192.168.133.152
-192.168.133.153
+192.168.133.151 package=true
+192.168.133.152 package=true
+192.168.133.153 package=true
 
 # docker、docker-compose节点
 [docker]

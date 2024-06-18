@@ -4,17 +4,17 @@
     var: package
 
 - name: "1、停止残留的node_exporter"
-  ignore_errors: yes
+  ignore_errors: true
   systemd:
     name: node_exporter
     state: stopped
-  become: yes
+  become: true
 
 - name: "2、清理可能的node_exporter service残留文件"
   file:
     path: /etc/systemd/system/node_exporter.service
     state: absent
-  become: yes
+  become: true
 
 - name: "3、清理可能的node_exporter残留文件夹"
   file:

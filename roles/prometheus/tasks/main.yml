@@ -4,17 +4,17 @@
     var: package
 
 - name: "1、停止残留的prometheus"
-  ignore_errors: yes
+  ignore_errors: true
   systemd:
     name: prometheus
     state: stopped
-  become: yes
+  become: true
 
 - name: "2、清理可能的prometheus service残留文件"
   file:
     path: /etc/systemd/system/prometheus.service
     state: absent
-  become: yes
+  become: true
 
 - name: "3、清理可能的prometheus残留文件夹"
   file:
@@ -71,9 +71,9 @@
     owner: "{{ prometheus_install_user }}"
     group: "{{ prometheus_install_user }}"
     state: directory
+    recurse: yes
   with_items:
     - "{{ prometheus_data_dir }}"
-    - "{{ prometheus_data_dir }}/data"
 
 - name: "12、配置systemd守护进程"
   template: src=prometheus.service.j2 dest=/etc/systemd/system/prometheus.service

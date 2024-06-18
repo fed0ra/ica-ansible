@@ -3,15 +3,36 @@
   debug:
     var: package
 
-- name: "1、创建临时目录"
+- name: "1、停止残留的mysql"
+  ignore_errors: true
+  systemd:
+    name: mysqld
+    state: stopped
+  become: true
+
+- name: "2、清理可能的mysql service残留文件"
+  file:
+    path: /etc/systemd/system/mysqld.service
+    state: absent
+  become: true
+
+- name: "3、清理可能的mysql残留文件夹"
+  file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - '{{ mysql_work_dir }}'
+    - '{{ mysql_work_dir }}-{{ mysql_version }}'
+
+- name: "4、创建临时目录"
   file: dest={{ tmp_dir }} state=directory
 
-- name: "2、拷贝mysql二进制包"
+- name: "5、拷贝mysql二进制包"
   copy: src={{ software_dir }}/mysql-{{ mysql_version }}-linux-glibc2.12-x86_64.tar.xz dest={{ tmp_dir }}
   #when: package is defined
   when: hostvars[inventory_hostname]['package'] == "true"
 
-- name: "2、下载mysql二进制包"
+- name: "5、下载mysql二进制包"
   get_url:
     url: "https://cdn.mysql.com/archives/mysql-8.0/mysql-{{ mysql_version }}-linux-glibc2.12-x86_64.tar.xz"
     validate_certs: false
@@ -21,18 +42,18 @@
   #when: package is not defined
   when: hostvars[inventory_hostname]['package'] == "false"
 
-- name: "3、解压mysql二进制包"
+- name: "6、解压mysql二进制包"
   unarchive: src={{ tmp_dir }}/mysql-{{ mysql_version }}-linux-glibc2.12-x86_64.tar.xz dest={{ tmp_dir }} remote_src=true
 
-- name: "4、移动mysql二进制包"
+- name: "7、移动mysql二进制包"
   command: mv {{ tmp_dir }}/mysql-{{ mysql_version }}-linux-glibc2.12-x86_64 {{ mysql_work_dir }}-{{ mysql_version }}
 
-- name: "5、创建{{ mysql_install_user }}用户"
+- name: "8、创建{{ mysql_install_user }}用户"
   user:
     name: "{{ mysql_install_user }}"
     shell: /sbin/nologin
 
-- name: "6、创建数据目录"
+- name: "9、创建数据目录"
   file:
     path: "{{ item }}"
     state: directory
@@ -42,15 +63,15 @@
   with_items:
     - "{{ mysql_work_dir }}-{{ mysql_version }}/data"
 
-- name: "7、生成mysql配置文件"
+- name: "10、生成mysql配置文件"
   template:
     src: "my.cnf.j2"
     dest: "{{ mysql_work_dir }}-{{ mysql_version }}/my.cnf"
 
-- name: "8、修改权限"
+- name: "11、修改权限"
   command: chown -R "{{ mysql_install_user }}:{{ mysql_install_user }}" "{{ mysql_work_dir }}-{{ mysql_version }}"
 
-- name: "9、创建链接文件"
+- name: "12、创建链接文件"
   file:
     src: "{{ mysql_work_dir }}-{{ mysql_version }}"
     dest: "{{ mysql_work_dir }}"
@@ -58,10 +79,10 @@
     group: "{{ mysql_install_user }}"
     state: link
 
-- name: "10、Gather facts获取系统信息"
+- name: "13、Gather facts获取系统信息"
   ansible.builtin.setup:
 
-- name: "11、安装依赖 4 Debian"
+- name: "14、安装依赖 4 Debian"
   apt:
     name:
       - libnuma1
@@ -69,7 +90,7 @@
       - pkg-config
   when: ansible_os_family == "Debian"
 
-- name: "11、安装依赖 4 RedHat"
+- name: "15、安装依赖 4 RedHat"
   yum:
     name:
       - numactl-libs
@@ -77,41 +98,41 @@
       - pkgconfig
   when: ansible_os_family == "RedHat"
 
-- name: "12、安装PyMySQL"
+- name: "16、安装PyMySQL"
   shell: pip install PyMySQL
 
-- name: "13、数据库初始化"
+- name: "17、数据库初始化"
   shell: ./bin/mysqld --defaults-file={{ mysql_work_dir }}/my.cnf --initialize --user={{ mysql_install_user }} # 2>&1 | tee password.txt 
   args:
     chdir: "{{ mysql_work_dir }}"
 
-- name: "14、注册初始密码"
+- name: "18、注册初始密码"
   #shell: cat {{ mysql_work_dir }}/password.txt | awk '/A temporary password/{print $NF}'
   shell: cat {{ mysql_work_dir }}/data/error.log | awk '/A temporary password/{print $NF}'
   register: mysql_init_passwd
   args:  
     chdir: "{{ mysql_work_dir }}"
 
-- name: "15、打印初始密码"
+- name: "19、打印初始密码"
   debug: 
     msg: "{{ mysql_init_passwd.stdout }}"
 
-- name: "16、配置systemd守护进程"
+- name: "20、配置systemd守护进程"
   template: src=mysqld.service.j2 dest=/etc/systemd/system/mysqld.service
 
-- name: "17、启动mysqld服务"
+- name: "21、启动mysqld服务"
   systemd:
     name: mysqld
     state: started
     daemon_reload: yes
     enabled: yes
 
-- name: "18、修改初始密码"
+- name: "22、修改初始密码"
   shell: ./bin/mysqladmin -S {{ mysql_work_dir }}/mysql.sock -u root -p"{{ mysql_init_passwd.stdout }}" password "{{ mysql_root_passwd }}"
   args:
     chdir: "{{ mysql_work_dir }}"
 
-- name: "19、创建{{ repl_user }}同步用户"
+- name: "23、创建{{ repl_user }}同步用户"
   mysql_user: 
     login_host: localhost
     login_user: root
@@ -125,7 +146,7 @@
     host: "%"
   when: master is defined
 
-- name: "20、从库配置从主库同步"
+- name: "24、从库配置从主库同步"
   mysql_replication:
     login_host: localhost
     login_user: root     
@@ -140,7 +161,7 @@
     mode: changemaster
   when: slave is defined
 
-- name: "21、Start Slave"
+- name: "25、Start Slave"
   mysql_replication: 
     login_host: localhost
     login_user: root 
@@ -150,7 +171,7 @@
     mode: startslave
   when: slave is defined
 
-#- name: "22、注册复制状态"
+#- name: "26、注册复制状态"
 #  mysql_replication:
 #    login_host: localhost
 #    login_user: root
@@ -161,7 +182,7 @@
 #  when: slave is defined
 #  register: info
 
-#- name: "23、打印复制状态信息"
+#- name: "27、打印复制状态信息"
 #  debug:
 #    msg: "Slave_IO_Running={{ info.Slave_IO_Running }}       Slave_SQL_Running={{ info.Slave_SQL_Running }}"
 #  when: slave is defined

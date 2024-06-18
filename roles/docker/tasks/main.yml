@@ -3,30 +3,60 @@
   debug:
     var: package
 
-- name: "1、创建临时目录"
+- name: "1、停止残留的docker"
+  ignore_errors: true
+  systemd:
+    name: docker
+    state: stopped
+  become: true
+
+- name: "2、清理可能的docker service残留文件"
+  file:
+    path: /etc/systemd/system/docker.service
+    state: absent
+  become: true
+
+- name: "3、清理可能的docker残留文件夹"
+  file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - '/usr/bin/containerd'
+    - '/usr/bin/containerd-shim-runc-v2'
+    - '/usr/bin/ctr'
+    - '/usr/bin/docker'
+    - '/usr/bin/dockerd'
+    - '/usr/bin/docker-init'
+    - '/usr/bin/docker-proxy'
+    - '/usr/bin/runc'
+    - '/etc/docker/daemon.json'
+    - '{{ docker_compose_bindir }}/{{ docker_compose_link }}-{{ docker_compose_version }}'
+    - '/usr/bin/{{ docker_compose_link }}'
+
+- name: "4、创建临时目录"
   file: dest={{ tmp_dir }} state=directory
 
-- name: "2、创建docker.json目录"
+- name: "5、创建docker.json目录"
   file: dest={{ docker_json_dir }} state=directory
 
-- name: "3、安装iptables依赖 4 Debian"
+- name: "6、安装iptables依赖 4 Debian"
   apt:
     name:
       - iptables
   when: ansible_os_family == "Debian"
 
-- name: "3、安装iptables依赖 4 RedHat"
+- name: "6、安装iptables依赖 4 RedHat"
   yum:
     name:
       - iptables
   when: ansible_os_family == "RedHat"
 
-- name: "4、拷贝docker二进制包"
+- name: "7、拷贝docker二进制包"
   copy: src={{ software_dir }}/docker-{{ docker_version }}.tgz dest={{ tmp_dir }}
   #when: package is defined
   when: hostvars[inventory_hostname]['package'] == "true"
 
-- name: "4、下载docker二进制包"
+- name: "7、下载docker二进制包"
   get_url:
     url: "https://mirrors.aliyun.com/docker-ce/linux/static/stable/x86_64/docker-{{ docker_version }}.tgz"
     validate_certs: false
@@ -36,10 +66,10 @@
   #when: package is not defined
   when: hostvars[inventory_hostname]['package'] == "false"
 
-- name: "5、解压docker二进制包"
+- name: "8、解压docker二进制包"
   unarchive: src={{ tmp_dir }}/docker-{{ docker_version }}.tgz dest={{ tmp_dir }} remote_src=true
 
-- name: "6、移动docker二进制文件"
+- name: "9、移动docker二进制文件"
   copy: src={{ tmp_dir }}/docker/{{ item }} dest=/usr/bin mode=0755 remote_src=true
   with_items:
     - containerd
@@ -51,56 +81,56 @@
     - docker-proxy
     - runc
 
-- name: "7、生成daemon.json文件"
+- name: "10、生成daemon.json文件"
   template:
     src: "daemon.json.j2"
     dest: "/etc/docker/daemon.json"
 
-- name: "8、配置systemd守护进程"
+- name: "11、配置systemd守护进程"
   template: src=docker.service.j2 dest=/etc/systemd/system/docker.service
 
-- name: "9、拷贝docker-compose二进制文件"
+- name: "12、拷贝docker-compose二进制文件"
   copy: src={{ software_dir }}/docker-compose dest={{ docker_compose_bindir }} mode=0755
   #when: package is defined
   when: hostvars[inventory_hostname]['package'] == "true"
 
-- name: "9、下载docker-compose二进制文件"
+- name: "12、下载docker-compose二进制文件"
   get_url:
     url: "https://github.com/docker/compose/releases/download/v{{ docker_compose_version }}/docker-compose-linux-x86_64"
     validate_certs: false
-    dest: "{{ docker_compose_bindir }}/{{ docker_compose_link }}"
+    dest: "{{ docker_compose_bindir }}/{{ docker_compose_link }}-{{ docker_compose_version }}"
     mode: "0755"
     force: true
   #when: package is not defined
   when: hostvars[inventory_hostname]['package'] == "false"
 
-- name: "10、创建docker-compose链接文件"
+- name: "13、创建docker-compose链接文件"
   file:
-    src: "{{ docker_compose_bindir }}/{{ docker_compose_link }}"
+    src: "{{ docker_compose_bindir }}/{{ docker_compose_link }}-{{ docker_compose_version }}"
     dest: "/usr/bin/{{ docker_compose_link }}"
     state: link
 
-- name: "11、启动docker服务"
+- name: "14、启动docker服务"
   systemd:
     name: docker
     state: started
     daemon_reload: yes
     enabled: yes
 
-- name: "12、获取docker版本信息"
+- name: "15、获取docker版本信息"
   shell: docker -v
   register: docker_version
 
-- name: "13、获取docker-compose版本信息"
+- name: "16、获取docker-compose版本信息"
   shell: docker-compose -v
   register: docker_compose_version
 
-- name: "14、打印docker版本信息"
+- name: "17、打印docker版本信息"
   ansible.builtin.debug:
     var: docker_version.stdout_lines
   changed_when: false
 
-- name: "15、打印docker-compose版本信息"
+- name: "18、打印docker-compose版本信息"
   ansible.builtin.debug:
     var: docker_compose_version.stdout_lines
   changed_when: false

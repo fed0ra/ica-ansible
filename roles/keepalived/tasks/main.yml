@@ -3,14 +3,35 @@
   debug:
     var: package
 
-- name: "1、创建临时目录"
+- name: "1、停止残留的keepalived"
+  ignore_errors: true
+  systemd:
+    name: keepalived
+    state: stopped
+  become: true
+
+- name: "2、清理可能的keepalived service残留文件"
+  file:
+    path: /etc/systemd/system/keepalived.service
+    state: absent
+  become: true
+
+- name: "3、清理可能的keepalived残留文件夹"
+  file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - '{{ keepalived_work_dir }}'
+    - '/etc/keepalived/keepalived.conf'
+
+- name: "4、创建临时目录"
   file: dest={{ tmp_dir }} state=directory
 
-- name: "2、拷贝keepalived安装包"
+- name: "5、拷贝keepalived安装包"
   copy: src={{ software_dir }}/keepalived-2.2.7.tar.gz dest={{ tmp_dir }}
   when: hostvars[inventory_hostname]['package'] == "true"
 
-- name: "2、下载keepalived二进制包"
+- name: "5、下载keepalived二进制包"
   get_url:
     url: "https://www.keepalived.org/software/keepalived-{{ keepalived_version }}.tar.gz"
     validate_certs: false
@@ -19,30 +40,30 @@
     force: true
   when: hostvars[inventory_hostname]['package'] == "false"
 
-- name: "3、解压keepalived源码"
+- name: "6、解压keepalived源码"
   unarchive: src={{ tmp_dir }}/keepalived-2.2.7.tar.gz dest={{ tmp_dir }} remote_src=true
 
-- name: "4、安装openssl等插件"
+- name: "7、安装openssl等插件"
   package:
     name: "{{ item }}"
   with_items:
     - openssl
     - libssl-dev
 
-- name: "5、编译安装keepalived"
+- name: "8、编译安装keepalived"
   shell: cd {{ tmp_dir }}/keepalived-{{ keepalived_version }} && ./configure --prefix={{ keepalived_work_dir }} --sysconf=/etc && make  && make install
   changed_when: false
 
-- name: "6、拷贝keepalived配置文件"
+- name: "9、拷贝keepalived配置文件"
   template: src=keepalived.conf.j2 dest=/etc/keepalived/keepalived.conf
 
-- name: "7、拷贝keepalived.service文件"
+- name: "10、拷贝keepalived.service文件"
   template: src=keepalived.service.j2 dest=/etc/systemd/system/keepalived.service
 
-- name: "8、拷贝nginx健康检查脚本"
+- name: "11、拷贝nginx健康检查脚本"
   copy: src=check_nginx.sh dest=/etc/keepalived/ mode=u+x
 
-- name: "9、启动keepalived服务"
+- name: "12、启动keepalived服务"
   systemd: name={{ item }} state=restarted enabled=yes daemon_reload=yes
   with_items:
     - keepalived

@@ -1,0 +1,8 @@
+cluster.name: elk-cluster
+node.name: {{ inventory_hostname }}
+path.data: {{ elasticsearch_data_dir }}/data
+path.logs: {{ elasticsearch_install_path }}/{{ elasticsearch_link }}/logs
+network.host: {{ inventory_hostname }}
+http.port: {{ elasticsearch_port }}
+discovery.seed_hosts: [{% for host in groups['elasticsearch'] %}{{ host }}{% if not loop.last %}, {% endif %}{% endfor %}]
+cluster.initial_master_nodes: [{% for host in groups['elasticsearch'] %}{{ host }}{% if not loop.last %}, {% endif %}{% endfor %}]

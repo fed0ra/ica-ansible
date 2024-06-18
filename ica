@@ -18,6 +18,9 @@ available steps:
     10  prometheus         to install prometheus server
     11  node_exporter      to install node_exporter
     12  alertmanager       to install alertmanager
+    13  elasticsearch      to install elasticsearch
+    14  kibana             to install kibana
+    15  filebeat           to install filebeat
     90  all                to run 01~11 all at once 
 
 examples: ./ica 01  (or ./ica nginx)
@@ -66,6 +69,15 @@ function setup() {
           ;;
       (12|alertmanager)
           PLAY_BOOK="12.alertmanager.yaml"
+          ;;
+      (13|elasticsearch)
+          PLAY_BOOK="13.elasticsearch.yaml"
+          ;;
+      (14|kibana)
+          PLAY_BOOK="14.kibana.yaml"
+          ;;
+      (15|filebeat)
+          PLAY_BOOK="15.filebeat.yaml"
           ;;
       (90|all)
           PLAY_BOOK="90.all.yml"

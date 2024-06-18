@@ -4,17 +4,17 @@
     var: package
 
 - name: "1、停止残留的alertmanager"
-  ignore_errors: yes
+  ignore_errors: true
   systemd:
     name: alertmanager
     state: stopped
-  become: yes
+  become: true
 
 - name: "2、清理可能的alertmanager service残留文件"
   file:
     path: /etc/systemd/system/alertmanager.service
     state: absent
-  become: yes
+  become: true
 
 - name: "3、清理可能的alertmanager残留文件夹"
   file:
@@ -71,9 +71,9 @@
     owner: "{{ alertmanager_install_user }}"
     group: "{{ alertmanager_install_user }}"
     state: directory
+    recurse: yes
   with_items:
     - "{{ alertmanager_data_dir }}"
-    - "{{ alertmanager_data_dir }}/data"
 
 - name: "12、配置systemd守护进程"
   template: src=alertmanager.service.j2 dest=/etc/systemd/system/alertmanager.service

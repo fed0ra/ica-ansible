@@ -1,0 +1,110 @@
+---
+- name: debug package variable
+  debug:
+    var: package
+
+- name: "1、停止残留的elasticsearch"
+  ignore_errors: true
+  systemd:
+    name: elasticsearch
+    state: stopped
+  become: true
+
+- name: "2、清理可能的elasticsearch service残留文件"
+  file:
+    path: /etc/systemd/system/elasticsearch.service
+    state: absent
+  become: true
+
+- name: "3、清理可能的elasticsearch残留文件夹"
+  file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - '{{ elasticsearch_install_path }}/{{ elasticsearch_link }}'
+    - '{{ elasticsearch_install_path }}/elasticsearch-{{ elasticsearch_version }}'
+    - '{{ elasticsearch_data_dir }}'
+
+- name: "4、创建临时目录"
+  file: dest={{ tmp_dir }} state=directory
+
+- name: "5、拷贝elasticsearch二进制包"
+
+  copy: src={{ software_dir }}/elasticsearch-{{ elasticsearch_version }}-linux-x86_64.tar.gz dest={{ tmp_dir }}
+  when: hostvars[inventory_hostname]['package'] == "true"
+
+- name: "5、下载elasticsearch二进制包"
+  get_url:
+    url: "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-{{ elasticsearch_version }}-linux-x86_64.tar.gz"
+    validate_certs: false
+    dest: "{{ tmp_dir }}"
+    mode: "0644"
+    force: true
+  when: hostvars[inventory_hostname]['package'] == "false"
+
+- name: "6、解压elasticsearch二进制包"
+  unarchive: src={{ tmp_dir }}/elasticsearch-{{ elasticsearch_version }}-linux-x86_64.tar.gz dest={{ tmp_dir }} remote_src=true
+
+- name: "7、移动elasticsearch二进制包"
+  command: mv {{ tmp_dir }}/elasticsearch-{{ elasticsearch_version }} {{ elasticsearch_install_path }}/elasticsearch-{{ elasticsearch_version }}
+
+- name: "8、生成elasticsearch.yml配置文件"
+  template:
+    src: "elasticsearch.yml.j2"
+    dest: "{{ elasticsearch_install_path }}/elasticsearch-{{ elasticsearch_version }}/config/elasticsearch.yml"
+
+- name: "9、修改堆内存大小"
+  shell: echo "-Xms{{ elasticsearch_Xms }}\n-Xmx{{ elasticsearch_Xmx }}" >> {{ elasticsearch_install_path }}/elasticsearch-{{ elasticsearch_version }}/config/jvm.options
+
+- name: "10、创建{{ elasticsearch_install_user }}用户"
+  user:
+    name: "{{ elasticsearch_install_user }}"
+    shell: /sbin/nologin
+
+- name: "11、创建链接文件"
+  file:
+    src: "{{ elasticsearch_install_path }}/elasticsearch-{{ elasticsearch_version }}"
+    dest: "{{ elasticsearch_install_path }}/{{ elasticsearch_link }}"
+    owner: "{{ elasticsearch_install_user }}"
+    group: "{{ elasticsearch_install_user }}"
+    state: link
+
+- name: "12、创建数据目录"
+  file: dest={{ item }} state=directory
+  with_items:
+    - "{{ elasticsearch_data_dir }}/data"
+
+- name: "13、修改数据目录权限"
+  file: 
+    path: "{{ item }}"
+    owner: "{{ elasticsearch_install_user }}"
+    group: "{{ elasticsearch_install_user }}"
+    state: directory
+    recurse: yes
+  with_items:
+    - "{{ elasticsearch_data_dir }}"
+    - "{{ elasticsearch_install_path }}/elasticsearch-{{ elasticsearch_version }}"
+
+- name: "14、配置systemd守护进程"
+  template: src=elasticsearch.service.j2 dest=/etc/systemd/system/elasticsearch.service
+
+- name: "15、启动elasticsearch服务"
+  systemd:
+    name: elasticsearch
+    state: started
+    daemon_reload: yes
+    enabled: yes
+
+- name: "16、部署配置信息"
+  delegate_to: localhost
+  debug:
+    msg: |
+      版本号：{{ elasticsearch_version }}\n
+      端口号：{{ elasticsearch_port }}\n
+      安装目录：{{ elasticsearch_install_path }}/elasticsearch-{{ elasticsearch_version }}\n
+      配置文件路径：{{ elasticsearch_install_path }}/elasticsearch-{{ elasticsearch_version }}/config/elasticsearch.yml\n
+      软连接：{{ elasticsearch_install_path }}/{{ elasticsearch_link }}\n
+      数据目录：{{ elasticsearch_data_dir }}\n
+      启动命令：systemctl start elasticsearch\n
+      查看集群状态命令：curl {ip}:9200\n
+      查看集群节点命令：curl {ip}:9200/_cat/nodes?v

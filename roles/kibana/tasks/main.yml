@@ -1,0 +1,86 @@
+---
+- name: debug package variable
+  debug:
+    var: package
+
+- name: "1、停止残留的kibana"
+  ignore_errors: true
+  systemd:
+    name: kibana
+    state: stopped
+  become: true
+
+- name: "2、清理可能的kibana service残留文件"
+  file:
+    path: /etc/systemd/system/kibana.service
+    state: absent
+  become: true
+
+- name: "3、清理可能的kibana残留文件夹"
+  file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - '{{ kibana_install_path }}/{{ kibana_link }}'
+    - '{{ kibana_install_path }}/kibana-{{ kibana_version }}'
+
+- name: "4、创建临时目录"
+  file: dest={{ tmp_dir }} state=directory
+
+- name: "5、拷贝kibana二进制包"
+
+  copy: src={{ software_dir }}/kibana-{{ kibana_version }}-linux-x86_64.tar.gz dest={{ tmp_dir }}
+  when: hostvars[inventory_hostname]['package'] == "true"
+
+- name: "5、下载kibana二进制包"
+  get_url:
+    url: "https://artifacts.elastic.co/downloads/kibana/kibana-{{ kibana_version }}-linux-x86_64.tar.gz"
+    validate_certs: false
+    dest: "{{ tmp_dir }}"
+    mode: "0644"
+    force: true
+  when: hostvars[inventory_hostname]['package'] == "false"
+
+- name: "6、解压kibana二进制包"
+  unarchive: src={{ tmp_dir }}/kibana-{{ kibana_version }}-linux-x86_64.tar.gz dest={{ tmp_dir }} remote_src=true
+
+- name: "7、移动kibana二进制包"
+  command: mv {{ tmp_dir }}/kibana-{{ kibana_version }}-linux-x86_64 {{ kibana_install_path }}/kibana-{{ kibana_version }}
+
+- name: "8、生成kibana.yml配置文件"
+  template:
+    src: "kibana.yml.j2"
+    dest: "{{ kibana_install_path }}/kibana-{{ kibana_version }}/config/kibana.yml"
+
+- name: "9、创建{{ kibana_install_user }}用户"
+  user:
+    name: "{{ kibana_install_user }}"
+    shell: /sbin/nologin
+
+- name: "10、创建链接文件"
+  file:
+    src: "{{ kibana_install_path }}/kibana-{{ kibana_version }}"
+    dest: "{{ kibana_install_path }}/{{ kibana_link }}"
+    owner: "{{ kibana_install_user }}"
+    group: "{{ kibana_install_user }}"
+    state: link
+
+- name: "11、修改目录权限"
+  file: 
+    path: "{{ item }}"
+    owner: "{{ kibana_install_user }}"
+    group: "{{ kibana_install_user }}"
+    state: directory
+    recurse: yes
+  with_items:
+    - "{{ kibana_install_path }}/kibana-{{ kibana_version }}"
+
+- name: "12、配置systemd守护进程"
+  template: src=kibana.service.j2 dest=/etc/systemd/system/kibana.service
+
+- name: "13、启动kibana服务"
+  systemd:
+    name: kibana
+    state: started
+    daemon_reload: yes
+    enabled: yes

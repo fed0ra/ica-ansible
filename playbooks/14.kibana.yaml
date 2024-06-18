@@ -1,0 +1,5 @@
+- name: 部署kibana
+  gather_facts: false
+  hosts: kibana
+  roles:
+    - kibana

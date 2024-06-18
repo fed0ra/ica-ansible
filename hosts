@@ -1,6 +1,7 @@
 [test]
 192.168.133.151
 
+######################################################################
 # Nginx节点IP
 [nginx]
 192.168.133.151 package=true    # package: true/false
@@ -8,14 +9,16 @@
 
 # Nginx高可用Keepalived节点IP
 [keepalived]
-192.168.133.151 ha_name=ha-master package=true
-192.168.133.152 ha_name=ha-backup package=true
+192.168.133.151 ha_name=ha-master package=true  # master节点
+192.168.133.152 ha_name=ha-backup package=true  # backup节点
 
+######################################################################
 # MySQL主从节点IP
 [mysql]
-192.168.133.151 master=true package=true
-192.168.133.152 slave=true package=true
+192.168.133.151 master=true package=true    # mysql主
+192.168.133.152 slave=true package=true     # mysql从
 
+######################################################################
 # jdk节点IP
 [jdk]
 192.168.133.151 package=true
@@ -28,24 +31,27 @@
 192.168.133.152 package=true
 192.168.133.153 package=true
 
+######################################################################
 # docker、docker-compose节点
 [docker]
 192.168.133.151 package=true
 192.168.133.152 package=true
 192.168.133.153 package=true
 
-# zookeeper节点
+######################################################################
+# zookeeper集群节点
 [zookeeper]
 192.168.133.151 myid=1 package=true
 192.168.133.152 myid=2 package=true
 192.168.133.153 myid=3 package=true
 
-# kafka节点，nodeid为Kraft模式使用
+# kafka集群节点，nodeid为Kraft模式使用
 [kafka]
 192.168.133.151 brokerid=0 nodeid=0 package=true
 192.168.133.152 brokerid=1 nodeid=1 package=true
 192.168.133.153 brokerid=2 nodeid=2 package=true
 
+######################################################################
 # prometheus节点
 [prometheus]
 192.168.133.151 package=true
@@ -58,4 +64,20 @@
 # alertmanager节点，可以与prometheus在同一节点上
 [alertmanager]
 192.168.133.151 package=true
+
+######################################################################
+# elasticsearch集群节点
+[elasticsearch]
+192.168.133.151 package=true
+192.168.133.152 package=true
+192.168.133.154 package=true
+
+# kibana节点
+[kibana]
+192.168.133.151 package=true
+
+# filebeat节点
+[filebeat]
+192.168.133.152 package=true
+
 

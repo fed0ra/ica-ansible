@@ -3,14 +3,22 @@
   debug:
     var: package
 
-- name: "1、创建临时目录"
+- name: "1、清理可能的jdk残留文件夹"
+  file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - '{{ jdk_path }}/{{ jdk_link }}'
+    - '{{ jdk_path }}/{{ jdk_work_dir }}'
+
+- name: "2、创建临时目录"
   file: dest={{ tmp_dir }} state=directory
 
-- name: "2、拷贝jdk二进制包"
+- name: "3、拷贝jdk二进制包"
   copy: src={{ software_dir }}/{{ jdk_version }} dest={{ tmp_dir }}
   when: hostvars[inventory_hostname]['package'] == "true"
 
-- name: "2、下载jdk二进制包"
+- name: "3、下载jdk二进制包"
   get_url:
     url: "https://repo.huaweicloud.com/java/jdk/8u151-b12/{{ jdk_version }}"
     validate_certs: false
@@ -19,23 +27,31 @@
     force: true
   when: hostvars[inventory_hostname]['package'] == "false"
 
-- name: "3、解压jdk二进制包"
+- name: "4、解压jdk二进制包"
   unarchive: src={{ tmp_dir }}/{{ jdk_version }} dest={{ tmp_dir }} remote_src=true
 
-- name: "4、移动jdk二进制包"
+- name: "5、移动jdk二进制包"
   command: mv {{ tmp_dir }}/{{ jdk_work_dir }} {{ jdk_path }}
 
-- name: "5、创建链接文件"
+- name: "6、创建链接文件"
   file:
     src: "{{ jdk_path }}/{{ jdk_work_dir }}"
     dest: "{{ jdk_path }}/{{ jdk_link }}"
     state: link
 
-- name: "6、set the JAVA_HOME environment"
-  lineinfile: dest=/etc/profile regexp="^export JAVA_HOME=" line="export JAVA_HOME={{ jdk_path }}/{{ jdk_link }}"
-
-- name: "7、set the PATH environment"
-  lineinfile: dest=/etc/profile regexp="^export PATH=\$PATH:" line="export PATH=$PATH:$JAVA_HOME/bin"
+- name: "7、生成环境变量配置文件"
+  template:
+    src: "jdk.sh.j2"
+    dest: "/etc/profile.d/jdk.sh"
 
 - name: "8、加载配置文件"
-  shell: . /etc/profile
+  shell: . /etc/profile.d/jdk.sh
+
+# - name: "7、set the JAVA_HOME environment"
+#   lineinfile: dest=/etc/profile regexp="^export JAVA_HOME=" line="export JAVA_HOME={{ jdk_path }}/{{ jdk_link }}"
+
+# - name: "8、set the PATH environment"
+#   lineinfile: dest=/etc/profile regexp="^export PATH=\$PATH:" line="export PATH=$PATH:$JAVA_HOME/bin"
+
+# - name: "9、加载配置文件"
+#   shell: . /etc/profile

@@ -1,0 +1,14 @@
+[Unit]
+Description=elasticsearch server daemon
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=elasticsearch
+LimitNOFILE=131070
+LimitNPROC=8192
+Restart=on-failure
+ExecStart={{ elasticsearch_install_path }}/{{ elasticsearch_link }}/bin/elasticsearch
+
+[Install]
+WantedBy=multi-user.target

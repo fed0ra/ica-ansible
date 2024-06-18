@@ -19,6 +19,7 @@ keepalived_work_dir: '/usr/local/keepalived' # keepalived安装目录
 keepalived_version: '2.2.7'
 vip: '192.168.133.250'  # 高可用keepalived的虚拟IP
 
+######################################################################
 # mysql
 mysql_work_dir: '/usr/local/mysql'  # mysql安装目录
 mysql_install_user: 'mysql'
@@ -29,6 +30,7 @@ repl_user: 'repl'
 repl_passwd: 'Repl@2024'
 master_ip: '192.168.133.151'  # mysql master的IP
 
+######################################################################
 # jdk
 jdk_path: '/usr/local'
 jdk_work_dir: 'jdk1.8.0_151'  # jdk1.8.0_141
@@ -40,6 +42,7 @@ maven_install_path: '/usr/local'
 maven_version: '3.6.3'
 maven_link: 'maven'
 
+######################################################################
 # docker
 docker_version: '24.0.6'
 docker_json_dir: '/etc/docker'
@@ -49,6 +52,7 @@ docker_compose_version: '2.24.6'
 docker_compose_bindir: '/usr/local/bin'
 docker_compose_link: 'docker-compose'
 
+######################################################################
 # zookeeper
 zookeeper_version: '3.5.10'
 zookeeper_install_path: '/opt'
@@ -68,6 +72,7 @@ hostname: 'kafka'
 # kafka公网连接地址：kafka：kafka.my.com:21090,kafka.my.com:21091,kafka.my.com:21092
 # kafka内网连接地址：192.168.133.151:9092,192.168.133.152:9092,192.168.133.153:9092
 
+######################################################################
 # prometheus，web ui默认端口号9090
 prometheus_version: '2.45.5'
 prometheus_install_path: '/opt'
@@ -88,3 +93,28 @@ alertmanager_install_path: '/opt'
 alertmanager_link: 'alertmanager'
 alertmanager_install_user: 'prometheus'
 alertmanager_data_dir: '/data/alertmanager'
+
+######################################################################
+# elasticsearch，默认端口号9200
+elasticsearch_port: '9200'    # 端口号
+elasticsearch_version: '7.17.21'
+elasticsearch_install_path: '/opt'
+elasticsearch_link: 'elasticsearch'
+elasticsearch_install_user: 'elasticsearch'
+elasticsearch_data_dir: '/data/elasticsearch'
+elasticsearch_Xms: '256m'
+elasticsearch_Xmx: '256m'
+
+# kibana，默认端口号5601
+kibana_port: '5601'    # 端口号
+kibana_version: '7.17.21'
+kibana_install_path: '/opt'
+kibana_link: 'kibana'
+kibana_install_user: 'kibana'
+
+# filebeat
+filebeat_version: '7.17.21'
+filebeat_install_path: '/opt'
+filebeat_link: 'filebeat'
+
+######################################################################

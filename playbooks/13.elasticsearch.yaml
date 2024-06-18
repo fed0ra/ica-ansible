@@ -1,0 +1,7 @@
+- name: 部署elasticsearch
+  gather_facts: false
+  hosts: elasticsearch
+  roles:
+    - elasticsearch
+
+

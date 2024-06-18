@@ -37,7 +37,10 @@ available PKes:
     kafka             to download package of kafka
     prometheus        to download package of prometheus
     node_exporter     to download package of node_exporter
-    alertmanager     to download package of alertmanager
+    alertmanager      to download package of alertmanager
+    elasticsearch     to download package of elasticsearch
+    kibana            to download package of kibana
+    filebeat          to download package of filebeat
 examples:
     ./ezdown -P mysql
 EOF
@@ -253,6 +256,53 @@ function download_alertmanager() {
   fi
 }
 
+function download_elasticsearch() {
+  ELASTICSEARCH_URL="https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${elasticsearch_version}-linux-x86_64.tar.gz"
+
+  if [[ -f "$BASE/elasticsearch-${elasticsearch_version}-linux-x86_64.tar.gz" ]];then
+    logger warn "elasticsearch binaries already existed"
+  else
+    logger info "downloading elasticsearch binaries, arch:$ARCH, version:${elasticsearch_version}"
+    if [[ -e /usr/bin/wget ]];then
+      wget -c --no-check-certificate "$ELASTICSEARCH_URL" || { logger error "downloading elasticsearch failed"; exit 1; }
+    else
+      curl -k -C- -O --retry 3 "$ELASTICSEARCH_URL" || { logger error "downloading elasticsearch failed"; exit 1; }
+    fi
+    mv -f "./elasticsearch-${elasticsearch_version}-linux-x86_64.tar.gz" "$BASE/"
+  fi
+}
+
+function download_kibana() {
+  KIBANA_URL="https://artifacts.elastic.co/downloads/kibana/kibana-${kibana_version}-linux-x86_64.tar.gz"
+
+  if [[ -f "$BASE/kibana-${kibana_version}-linux-x86_64.tar.gz" ]];then
+    logger warn "kibana binaries already existed"
+  else
+    logger info "downloading kibana binaries, arch:$ARCH, version:${kibana_version}"
+    if [[ -e /usr/bin/wget ]];then
+      wget -c --no-check-certificate "$KIBANA_URL" || { logger error "downloading kibana failed"; exit 1; }
+    else
+      curl -k -C- -O --retry 3 "$KIBANA_URL" || { logger error "downloading kibana failed"; exit 1; }
+    fi
+    mv -f "./kibana-${kibana_version}-linux-x86_64.tar.gz" "$BASE/"
+  fi
+}
+
+function download_filebeat() {
+  FILEBEAT_URL="https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-${filebeat_version}-linux-x86_64.tar.gz"
+
+  if [[ -f "$BASE/filebeat-${filebeat_version}-linux-x86_64.tar.gz" ]];then
+    logger warn "filebeat binaries already existed"
+  else
+    logger info "downloading filebeat binaries, arch:$ARCH, version:${filebeat_version}"
+    if [[ -e /usr/bin/wget ]];then
+      wget -c --no-check-certificate "$FILEBEAT_URL" || { logger error "downloading filebeat failed"; exit 1; }
+    else
+      curl -k -C- -O --retry 3 "$FILEBEAT_URL" || { logger error "downloading filebeat failed"; exit 1; }
+    fi
+    mv -f "./filebeat-${filebeat_version}-linux-x86_64.tar.gz" "$BASE/"
+  fi
+}
 
 function download_all() {
   download_mysql && \
@@ -265,7 +315,10 @@ function download_all() {
   download_kafka && \
   download_prometheus && \
   download_node_exporter && \
-  download_alertmanager
+  download_alertmanager && \
+  download_elasticsearch && \
+  download_kibana && \
+  download_filebeat
 }
 
 ### Main Lines ##################################################
@@ -292,7 +345,7 @@ function main() {
           ACTION="download_all"
           ;;
         P)
-          [[ $OPTARG =~ (mysql|docker|zookeeper|nginx|keepalived|jdk|maven|kafka|prometheus|node_exporter|alertmanager) ]] || \
+          [[ $OPTARG =~ (mysql|docker|zookeeper|nginx|keepalived|jdk|maven|kafka|prometheus|node_exporter|alertmanager|elasticsearch|kibana|filebeat) ]] || \
           { usage-down-packages; exit 1; }
           ACTION="download_$OPTARG"
           ;;

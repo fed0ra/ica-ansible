@@ -4,9 +4,30 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-User=kibana
+User={{ kibana_install_user }}
+Group={{ kibana_install_user }}
 Restart=on-failure
 ExecStart={{ kibana_install_path }}/{{ kibana_link }}/bin/kibana
+ExecStop=/usr/bin/kill -15 $MAINPID
+ExecReload=/usr/bin/kill -HUP $MAINPID
+Type=simple
+RemainAfterExit=yes
+PrivateTmp=true
+# file size
+LimitFSIZE=infinity
+# cpu time
+LimitCPU=infinity
+# virtual memory size
+LimitAS=infinity
+# open files
+LimitNOFILE=65535
+# processes/threads
+LimitNPROC=64000
+# locked memory
+LimitMEMLOCK=infinity
+# total threads (user+kernel)
+TasksMax=infinity
+TasksAccounting=false
 
 [Install]
 WantedBy=multi-user.target

@@ -4,3 +4,6 @@ server.name: kibana-server
 server.publicBaseUrl: http://{{ inventory_hostname }}:5601
 elasticsearch.hosts: [{% for host in groups['elasticsearch'] %}"http://{{ host }}:{{ elasticsearch_port }}"{% if not loop.last %}, {% endif %}{% endfor %}]
 i18n.locale: "zh-CN"
+elasticsearch.username: "kibana_system"
+elasticsearch.password: "{{ elasticstack_password }}"
+elasticsearch.ssl.certificateAuthorities: [ "{{ kibana_install_path }}/{{ kibana_link }}/certs/elastic-ca.pem" ]

@@ -5,10 +5,27 @@ After=network-online.target
 
 [Service]
 User=elasticsearch
-LimitNOFILE=131070
-LimitNPROC=8192
 Restart=on-failure
 ExecStart={{ elasticsearch_install_path }}/{{ elasticsearch_link }}/bin/elasticsearch
+# 指定此进程可以打开的最大文件数
+LimitNOFILE=131070
+# 指定此进程可以打开的最大进程数
+LimitNPROC=131070
+# 最大虚拟内存
+LimitAS=infinity
+# 最大文件大小
+LimitFSIZE=infinity
+# 超时设置 0-永不超时
+TimeoutStopSec=0
+# SIGTERM是停止java进程的信号
+KillSignal=SIGTERM
+# 信号只发送给给JVM
+KillMode=process
+# java进程不会被杀掉
+SendSIGKILL=no
+# 正常退出状态
+SuccessExitStatus=143
+LimitMEMLOCK=infinity
 
 [Install]
 WantedBy=multi-user.target

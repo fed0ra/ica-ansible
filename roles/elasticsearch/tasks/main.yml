@@ -48,6 +48,11 @@
 - name: "7、移动elasticsearch二进制包"
   command: mv {{ tmp_dir }}/elasticsearch-{{ elasticsearch_version }} {{ elasticsearch_install_path }}/elasticsearch-{{ elasticsearch_version }}
 
+- name: "12、创建证书目录"
+  file: dest={{ item }} state=directory
+  with_items:
+    - "{{ elasticsearch_install_path }}/elasticsearch-{{ elasticsearch_version }}/config/certs"
+
 - name: "8、生成elasticsearch.yml配置文件"
   template:
     src: "elasticsearch.yml.j2"

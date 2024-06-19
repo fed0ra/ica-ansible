@@ -104,6 +104,7 @@ elasticsearch_install_user: 'elasticsearch'
 elasticsearch_data_dir: '/data/elasticsearch'
 elasticsearch_Xms: '256m'
 elasticsearch_Xmx: '256m'
+elasticstack_password: '123456'
 
 # kibana，默认端口号5601
 kibana_port: '5601'    # 端口号

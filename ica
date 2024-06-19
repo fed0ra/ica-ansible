@@ -21,6 +21,7 @@ available steps:
     13  elasticsearch      to install elasticsearch
     14  kibana             to install kibana
     15  filebeat           to install filebeat
+    16  logstash           to install logstash
     90  all                to run 01~11 all at once 
 
 examples: ./ica 01  (or ./ica nginx)
@@ -78,6 +79,9 @@ function setup() {
           ;;
       (15|filebeat)
           PLAY_BOOK="15.filebeat.yaml"
+          ;;
+      (16|logstash)
+          PLAY_BOOK="16.logstash.yaml"
           ;;
       (90|all)
           PLAY_BOOK="90.all.yml"

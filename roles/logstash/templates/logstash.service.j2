@@ -1,0 +1,15 @@
+[Unit]
+Description=logstash server daemon
+Documentation={{ logstash_install_path }}/{{ logstash_link }}/bin/logstash --help
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=root
+Group=root
+Restart=on-failure
+Environment="LOGSTASH_CONFIG_OPTS=-f {{ logstash_install_path }}/{{ logstash_link }}/conf.d/logstash.conf"
+ExecStart={{ logstash_install_path }}/{{ logstash_link }}/bin/logstash $LOGSTASH_CONFIG_OPTS
+
+[Install]
+WantedBy=multi-user.target

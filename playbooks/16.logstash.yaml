@@ -1,0 +1,5 @@
+- name: 部署logstash
+  gather_facts: false
+  hosts: logstash
+  roles:
+    - logstash

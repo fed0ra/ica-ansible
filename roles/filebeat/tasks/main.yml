@@ -22,7 +22,7 @@
     state: absent
   loop:
     - '{{ filebeat_install_path }}/{{ filebeat_link }}'
-    - '{{ filebeat_install_path }}/filebeat-{{ filebeat_version }}-linux-x86_64'
+    - '{{ filebeat_install_path }}/filebeat-{{ filebeat_version }}'
 
 - name: "4、创建临时目录"
   file: dest={{ tmp_dir }} state=directory
@@ -65,8 +65,7 @@
 #     group: "{{ filebeat_install_user }}"
 #     state: directory
 #   with_items:
-#     - "{{ filebeat_install_path }}/filebeat-{{ filebeat_version }}-linux-x86_64"
-#     - "{{ filebeat_install_path }}/filebeat-{{ filebeat_version }}-linux-x86_64"
+#     - "{{ filebeat_install_path }}/filebeat-{{ filebeat_version }}"
 
 - name: "10、配置systemd守护进程"
   template: src=filebeat.service.j2 dest=/etc/systemd/system/filebeat.service

@@ -41,6 +41,7 @@ available PKes:
     elasticsearch     to download package of elasticsearch
     kibana            to download package of kibana
     filebeat          to download package of filebeat
+    logstash          to download package of logstash
 examples:
     ./ezdown -P mysql
 EOF
@@ -304,6 +305,22 @@ function download_filebeat() {
   fi
 }
 
+function download_logstash() {
+  LOGSTASH_URL="https://artifacts.elastic.co/downloads/logstash/logstash-${logstash_version}-linux-x86_64.tar.gz"
+
+  if [[ -f "$BASE/logstash-${logstash_version}-linux-x86_64.tar.gz" ]];then
+    logger warn "logstash binaries already existed"
+  else
+    logger info "downloading logstash binaries, arch:$ARCH, version:${logstash_version}"
+    if [[ -e /usr/bin/wget ]];then
+      wget -c --no-check-certificate "$LOGSTASH_URL" || { logger error "downloading logstash failed"; exit 1; }
+    else
+      curl -k -C- -O --retry 3 "$LOGSTASH_URL" || { logger error "downloading logstash failed"; exit 1; }
+    fi
+    mv -f "./logstash-${logstash_version}-linux-x86_64.tar.gz" "$BASE/"
+  fi
+}
+
 function download_all() {
   download_mysql && \
   download_docker && \
@@ -318,7 +335,8 @@ function download_all() {
   download_alertmanager && \
   download_elasticsearch && \
   download_kibana && \
-  download_filebeat
+  download_filebeat && \
+  download_logstash
 }
 
 ### Main Lines ##################################################
@@ -345,7 +363,7 @@ function main() {
           ACTION="download_all"
           ;;
         P)
-          [[ $OPTARG =~ (mysql|docker|zookeeper|nginx|keepalived|jdk|maven|kafka|prometheus|node_exporter|alertmanager|elasticsearch|kibana|filebeat) ]] || \
+          [[ $OPTARG =~ (mysql|docker|zookeeper|nginx|keepalived|jdk|maven|kafka|prometheus|node_exporter|alertmanager|elasticsearch|kibana|filebeat|logstash) ]] || \
           { usage-down-packages; exit 1; }
           ACTION="download_$OPTARG"
           ;;

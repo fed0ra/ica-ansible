@@ -1,0 +1,83 @@
+---
+- name: debug package variable
+  debug:
+    var: package
+
+- name: "1、停止残留的logstash"
+  ignore_errors: true
+  systemd:
+    name: logstash
+    state: stopped
+  become: true
+
+- name: "2、清理可能的logstash service残留文件"
+  file:
+    path: /etc/systemd/system/logstash.service
+    state: absent
+  become: true
+
+- name: "3、清理可能的logstash残留文件夹"
+  file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - '{{ logstash_install_path }}/{{ logstash_link }}'
+    - '{{ logstash_install_path }}/logstash-{{ logstash_version }}'
+
+- name: "4、创建临时目录"
+  file: dest={{ tmp_dir }} state=directory
+
+- name: "5、拷贝logstash二进制包"
+
+  copy: src={{ software_dir }}/logstash-{{ logstash_version }}-linux-x86_64.tar.gz dest={{ tmp_dir }}
+  when: hostvars[inventory_hostname]['package'] == "true"
+
+- name: "5、下载logstash二进制包"
+  get_url:
+    url: "https://artifacts.elastic.co/downloads/logstash/logstash-{{ logstash_version }}-linux-x86_64.tar.gz"
+    validate_certs: false
+    dest: "{{ tmp_dir }}"
+    mode: "0644"
+    force: true
+  when: hostvars[inventory_hostname]['package'] == "false"
+
+- name: "6、解压logstash二进制包"
+  unarchive: src={{ tmp_dir }}/logstash-{{ logstash_version }}-linux-x86_64.tar.gz dest={{ tmp_dir }} remote_src=true
+
+- name: "7、移动logstash二进制包"
+  command: mv {{ tmp_dir }}/logstash-{{ logstash_version }} {{ logstash_install_path }}/logstash-{{ logstash_version }}
+
+- name: "8、创建配置文件目录"
+  file: dest={{ item }} state=directory
+  with_items:
+    - "{{ logstash_install_path }}/logstash-{{ logstash_version }}/conf.d"
+
+- name: "9、生成logstash.yml配置文件"
+  template:
+    src: "logstash.conf.j2"
+    dest: "{{ logstash_install_path }}/logstash-{{ logstash_version }}/conf.d/logstash.conf"
+
+- name: "10、创建链接文件"
+  file:
+    src: "{{ logstash_install_path }}/logstash-{{ logstash_version }}"
+    dest: "{{ logstash_install_path }}/{{ logstash_link }}"
+    state: link
+
+# - name: "11、修改目录权限"
+#   file: 
+#     path: "{{ item }}"
+#     owner: "{{ logstash_install_user }}"
+#     group: "{{ logstash_install_user }}"
+#     state: directory
+#   with_items:
+#     - "{{ logstash_install_path }}/logstash-{{ logstash_version }}"
+
+- name: "11、配置systemd守护进程"
+  template: src=logstash.service.j2 dest=/etc/systemd/system/logstash.service
+
+# - name: "13、启动logstash服务"
+#   systemd:
+#     name: logstash
+#     state: started
+#     daemon_reload: yes
+#     enabled: yes

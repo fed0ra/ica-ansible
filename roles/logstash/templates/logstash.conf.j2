@@ -1,0 +1,47 @@
+filebeat.inputs:
+- type: filestream
+  enabled: true
+  paths:
+    - /tmp/*.txt
+  tags: ["elk-linux", "容器运维", "SRE运维"]
+#  fields:
+#    school: "北京市"
+#    class: "花园班"
+#  fields_under_root: true
+
+- type: filestream
+  enabled: true
+  paths:
+    - /tmp/test.log
+  tags: ["python", "go开发"]
+#  fields:
+#    name: "张三"
+#    hobby: "python,抖音"
+
+# 指定输出类型为elasticseach，即ES集群
+output.elasticsearch:
+  hosts: ["http://192.168.133.151:9200","http://192.168.133.152:9200","http://192.168.133.154:9200"]
+  # index: "my-linux-elk-%{+yyyy.MM.dd}"
+  indices:
+    - index: "my-linux-elk-%{+yyyy.MM.dd}"
+      # 匹配指定字段包含的内容
+      when.contains:
+        tags: "elk-linux"
+    - index: "my-linux-python-%{+yyyy.MM.dd}"
+      when.contains:
+        tags: "python"
+
+# 禁用索引生命周期管理
+setup.ilm.enabled: false
+# 设置索引模版的名称
+setup.template.name: "my-linux"
+# 设置索引模版的匹配模式
+setup.template.pattern: "my-linux*"
+# 覆盖已有的索引模版
+setup.template.overwrite: false
+# 配置索引模版
+setup.template.settings:
+  # 设置分片数量
+  index.number_of_shards: 3
+  # 设置副本数量，要求小于集群的数量
+  index.number_of_replicas: 2

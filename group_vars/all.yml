@@ -117,4 +117,10 @@ filebeat_version: '7.17.21'
 filebeat_install_path: '/opt'
 filebeat_link: 'filebeat'
 
+# logstash
+logstash_version: '7.17.21'
+logstash_install_path: '/opt'
+logstash_link: 'logstash'
+
+
 ######################################################################

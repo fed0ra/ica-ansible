@@ -80,4 +80,6 @@
 [filebeat]
 192.168.133.152 package=true
 
-
+# logstash节点
+[logstash]
+192.168.133.152 package=true

@@ -39,13 +39,13 @@
 192.168.133.153 package=true
 
 ######################################################################
-# zookeeper集群节点
+# zookeeper集群节点，需安装jdk
 [zookeeper]
 192.168.133.151 myid=1 package=true
 192.168.133.152 myid=2 package=true
 192.168.133.153 myid=3 package=true
 
-# kafka集群节点，nodeid为Kraft模式使用
+# kafka集群节点，nodeid为Kraft模式使用，需安装jdk
 [kafka]
 192.168.133.151 brokerid=0 nodeid=0 package=true
 192.168.133.152 brokerid=1 nodeid=1 package=true
@@ -83,3 +83,10 @@
 # logstash节点
 [logstash]
 192.168.133.152 package=true
+
+######################################################################
+# harbor节点，需安装docker，docker-compose
+[harbor]
+192.168.133.152 package=true
+
+

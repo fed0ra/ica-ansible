@@ -22,6 +22,7 @@ available steps:
     14  kibana             to install kibana
     15  filebeat           to install filebeat
     16  logstash           to install logstash
+    17  harbor             to install harbor
     90  all                to run 01~11 all at once 
 
 examples: ./ica 01  (or ./ica nginx)
@@ -82,6 +83,9 @@ function setup() {
           ;;
       (16|logstash)
           PLAY_BOOK="16.logstash.yaml"
+          ;;
+      (17|harbor)
+          PLAY_BOOK="17.harbor.yaml"
           ;;
       (90|all)
           PLAY_BOOK="90.all.yml"

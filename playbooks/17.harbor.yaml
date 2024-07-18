@@ -1,0 +1,5 @@
+- name: 部署harbor
+  gather_facts: false
+  hosts: harbor
+  roles:
+    - harbor

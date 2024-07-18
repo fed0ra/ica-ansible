@@ -1,0 +1,55 @@
+---
+- name: debug package variable
+  debug:
+    var: package
+
+- name: "1、停止残留的harbor"
+  ignore_errors: true
+  shell: cd {{ harbor_install_path }}/harbor-{{ harbor_version }} && docker-compose down -v
+  become: true
+
+- name: "2、清理可能的harbor残留文件夹"
+  file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - '{{ harbor_install_path }}/harbor-{{ harbor_version }}'
+    - '{{ harbor_data_dir }}'
+    - /var/log/harbor/
+
+- name: "3、创建临时目录"
+  file: dest={{ tmp_dir }} state=directory
+
+- name: "4、拷贝harbor二进制包"
+  copy: src={{ software_dir }}/harbor-offline-installer-v{{ harbor_version }}.tgz dest={{ tmp_dir }}
+  when: hostvars[inventory_hostname]['package'] == "true"
+
+- name: "4、下载harbor二进制包"
+  get_url:
+    url: "https://github.com/goharbor/harbor/releases/download/v{{ harbor_version }}/harbor-offline-installer-v{{ harbor_version }}.tgz"
+    validate_certs: false
+    dest: "{{ tmp_dir }}"
+    mode: "0644"
+    force: true
+  when: hostvars[inventory_hostname]['package'] == "false"
+
+- name: "5、解压harbor二进制包"
+  unarchive: src={{ tmp_dir }}/harbor-offline-installer-v{{ harbor_version }}.tgz dest={{ tmp_dir }} remote_src=true
+
+- name: "6、移动harbor二进制包"
+  command: mv {{ tmp_dir }}/harbor {{ harbor_install_path }}/harbor-{{ harbor_version }}
+
+- name: "7、创建数据目录"
+  file: dest={{ item }} state=directory
+  with_items:
+    - "{{ harbor_data_dir }}"
+    - "{{ harbor_install_path }}/harbor-{{ harbor_version }}/ssl"
+
+- name: "8、生成harbor.yml配置文件"
+  template:
+    src: "harbor.yml.j2"
+    dest: "{{ harbor_install_path }}/harbor-{{ harbor_version }}/harbor.yml"
+    mode: 0644
+
+- name: "9、启动harbor服务"
+  shell: cd {{ harbor_install_path }}/harbor-{{ harbor_version }} && ./install.sh

@@ -42,6 +42,7 @@ available PKes:
     kibana            to download package of kibana
     filebeat          to download package of filebeat
     logstash          to download package of logstash
+    harbor            to download package of harbor
 examples:
     ./ezdown -P mysql
 EOF
@@ -321,6 +322,23 @@ function download_logstash() {
   fi
 }
 
+function download_harbor() {
+  HARBOR_URL="https://github.com/goharbor/harbor/releases/download/v${harbor_version}/harbor-offline-installer-v${harbor_version}.tgz"
+
+
+  if [[ -f "$BASE/harbor-offline-installer-v${harbor_version}.tgz" ]];then
+    logger warn "harbor binaries already existed"
+  else
+    logger info "downloading harbor binaries, arch:$ARCH, version:${harbor_version}"
+    if [[ -e /usr/bin/wget ]];then
+      wget -c --no-check-certificate "$HARBOR_URL" || { logger error "downloading harbor failed"; exit 1; }
+    else
+      curl -k -C- -O --retry 3 "$HARBOR_URL" || { logger error "downloading harbor failed"; exit 1; }
+    fi
+    mv -f "./harbor-offline-installer-v${harbor_version}.tgz" "$BASE/"
+  fi
+}
+
 function download_all() {
   download_mysql && \
   download_docker && \
@@ -336,7 +354,8 @@ function download_all() {
   download_elasticsearch && \
   download_kibana && \
   download_filebeat && \
-  download_logstash
+  download_logstash && \
+  download_harbor
 }
 
 ### Main Lines ##################################################
@@ -363,7 +382,7 @@ function main() {
           ACTION="download_all"
           ;;
         P)
-          [[ $OPTARG =~ (mysql|docker|zookeeper|nginx|keepalived|jdk|maven|kafka|prometheus|node_exporter|alertmanager|elasticsearch|kibana|filebeat|logstash) ]] || \
+          [[ $OPTARG =~ (mysql|docker|zookeeper|nginx|keepalived|jdk|maven|kafka|prometheus|node_exporter|alertmanager|elasticsearch|kibana|filebeat|logstash|harbor) ]] || \
           { usage-down-packages; exit 1; }
           ACTION="download_$OPTARG"
           ;;

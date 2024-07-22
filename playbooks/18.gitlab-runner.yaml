@@ -1,0 +1,5 @@
+- name: 部署gitlab-runner
+  gather_facts: false
+  hosts: gitlab-runner
+  roles:
+    - gitlab-runner

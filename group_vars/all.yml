@@ -135,4 +135,13 @@ harbor_data_volume: '/data/harbor'
 harbor_install_path: '/opt'
 harbor_data_dir: '/data/harbor'
 
+# gitlab-runner
+docker_compose_v: '3'   # 3.8，默认2
+# gitlab_runner_instance_num: 2   # 一个主机启动多少个gitlab runner实例
+gitlab_runner_instance: ["group-oms", "group-test"]   # 一个主机启动gitlab runner实例名列表，配置文件持久化到目录/opt/gitlab-runner/gitlab-runner-[实例名]
+gitlab_runner_install_path: '/opt/gitlab-runner'
+gitlab_runner_service_name: 'gitlab-runner'
+gitlab_runner_image: 'gitlab/gitlab-runner:v14.6.0'   # 'bitnami/gitlab-runner:16.10.0-debian-12-r2'
+
+
 ######################################################################

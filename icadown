@@ -11,7 +11,7 @@ set -o errexit
 set -o pipefail
 #set -o xtrace
 
-cat ./group_vars/all.yml | grep -e "version" -e "software_dir"| sed "s/: /=/g" > ./tmp
+cat ./group_vars/all.yml | grep -e "version" -e "software_dir" -e "image" | sed "s/: /=/g" > ./tmp
 . ./tmp
 
 function usage() {
@@ -43,6 +43,7 @@ available PKes:
     filebeat          to download package of filebeat
     logstash          to download package of logstash
     harbor            to download package of harbor
+    gitlab-runner-image     to download package of gitlab-runner image
 examples:
     ./ezdown -P mysql
 EOF
@@ -339,6 +340,22 @@ function download_harbor() {
   fi
 }
 
+function download_gitlab-runner-image() {
+  echo ${harbor_version}
+  if [[ -f "$BASE/gitlab-runner-image.tar" ]];then
+    logger warn "gitlab-runner binaries already existed"
+  else
+    logger info "downloading gitlab-runner image, arch:$ARCH, image:${gitlab_runner_image}"
+    if [[ -e /usr/bin/docker ]];then
+      docker pull ${gitlab_runner_image} || { logger error "downloading gitlab-runner image failed"; exit 1; }
+      docker save ${gitlab_runner_image} > gitlab-runner-image.tar || { logger error "zip gitlab-runner image failed"; exit 1; }
+    else
+      logger error "need docker" && exit 1
+    fi
+    mv -f "./gitlab-runner-image.tar" "$BASE/"
+  fi
+}
+
 function download_all() {
   download_mysql && \
   download_docker && \
@@ -355,7 +372,8 @@ function download_all() {
   download_kibana && \
   download_filebeat && \
   download_logstash && \
-  download_harbor
+  download_harbor && \
+  download_gitlab-runner-image
 }
 
 ### Main Lines ##################################################
@@ -382,7 +400,7 @@ function main() {
           ACTION="download_all"
           ;;
         P)
-          [[ $OPTARG =~ (mysql|docker|zookeeper|nginx|keepalived|jdk|maven|kafka|prometheus|node_exporter|alertmanager|elasticsearch|kibana|filebeat|logstash|harbor) ]] || \
+          [[ $OPTARG =~ (mysql|docker|zookeeper|nginx|keepalived|jdk|maven|kafka|prometheus|node_exporter|alertmanager|elasticsearch|kibana|filebeat|logstash|harbor|gitlab-runner-image) ]] || \
           { usage-down-packages; exit 1; }
           ACTION="download_$OPTARG"
           ;;

@@ -89,4 +89,7 @@
 [harbor]
 192.168.133.152 package=true
 
+# gitlab-runner节点，需安装docker，docker-compose
+[gitlab-runner]
+192.168.133.151 package=true
 

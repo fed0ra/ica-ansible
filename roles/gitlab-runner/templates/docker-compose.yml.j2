@@ -1,0 +1,16 @@
+version: '{{ docker_compose_v }}'
+
+# gitlab-runner docker compose 部署容器文件
+
+# for i in range(1, gitlab_runner_instance_num + 1)
+services:
+{% for i in gitlab_runner_instance %}
+  {{ gitlab_runner_service_name }}-{{ i }}:
+    image: {{ gitlab_runner_image }}
+    user: "0"  # 或者使用字符串"root"代替，表示用户root
+    container_name: {{ gitlab_runner_service_name }}-{{ i }}
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - {{ gitlab_runner_install_path }}/{{ gitlab_runner_service_name }}-{{ i }}/:/etc/gitlab-runner/
+{% endfor %}

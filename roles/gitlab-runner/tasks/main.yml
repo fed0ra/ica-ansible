@@ -1,0 +1,45 @@
+---
+- name: debug package variable
+  debug:
+    var: package
+
+- name: "1、停止残留的gitlab-runner"
+  ignore_errors: true
+  shell: cd {{ gitlab_runner_install_path }} && docker-compose down -v
+  become: true
+
+- name: "2、清理可能的gitlab-runner残留文件夹"
+  file:
+    path: '{{ item }}'
+    state: absent
+  loop:
+    - '{{ gitlab_runner_install_path }}'
+
+- name: "3、创建临时目录"
+  file: dest={{ tmp_dir }} state=directory
+
+- name: "4、拷贝gitlab-runner离线镜像"
+  copy: src={{ software_dir }}/gitlab-runner-image.tar dest={{ tmp_dir }}
+  when: hostvars[inventory_hostname]['package'] == "true"
+
+- name: "5、导入gitlab-runner离线镜像"
+  command: /usr/bin/docker load -i {{ tmp_dir }}/gitlab-runner-image.tar
+
+- name: "6、创建gitlab-runner目录"
+  file: dest={{ item }} state=directory
+  with_items:
+    - "{{ gitlab_runner_install_path }}"
+    # - "{{ gitlab_runner_install_path }}/gitlab-runner-{{ item }}"
+  # loop: "{{ range(1, gitlab_runner_instance_num + 1) | list }}"
+  # loop: "{{ gitlab_runner_instance }}"
+  changed_when: true
+
+- name: "7、生成docker-compose.yml配置文件"
+  template:
+    src: "docker-compose.yml.j2"
+    dest: "{{ gitlab_runner_install_path }}/docker-compose.yml"
+    mode: 0644
+  changed_when: true
+
+- name: "8、启动gitlab-runner服务"
+  shell: cd {{ gitlab_runner_install_path }} && docker-compose up -d

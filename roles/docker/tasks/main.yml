@@ -90,7 +90,7 @@
   template: src=docker.service.j2 dest=/etc/systemd/system/docker.service
 
 - name: "12、拷贝docker-compose二进制文件"
-  copy: src={{ software_dir }}/docker-compose dest={{ docker_compose_bindir }} mode=0755
+  copy: src={{ software_dir }}/docker-compose dest={{ docker_compose_bindir }}/{{ docker_compose_link }}-{{ docker_compose_version }} mode=0755
   #when: package is defined
   when: hostvars[inventory_hostname]['package'] == "true"
 

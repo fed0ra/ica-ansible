@@ -23,7 +23,7 @@ vip: '192.168.133.250'  # 高可用keepalived的虚拟IP
 # mysql
 mysql_work_dir: '/usr/local/mysql'  # mysql安装目录
 mysql_install_user: 'mysql'
-mysql_version: '8.0.28'
+mysql_version: '8.0.34'   # '8.0.28'
 mysql_port: '3306'
 mysql_root_passwd: 'Admin@2024'
 repl_user: 'repl'
